@@ -1,0 +1,204 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: New Sprite Atlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 3400b92beb9f77c4e919dbdb39e9ec8c, type: 3}
+    - {fileID: 2800000, guid: 05c08d2d951f33243b9b36a3d6b46f29, type: 3}
+    - {fileID: 2800000, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+    - {fileID: 2800000, guid: b00f2daa228ec6c408a10403e8c2552b, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300078
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300076
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300012
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300002
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300098
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300102
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300074
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300062
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300014
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300100
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300024
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300040
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300008
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300032
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300034
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300042
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300052
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300036
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300094
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300084
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300070
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300064
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300066
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300106
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300000
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300056
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300072
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300086
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300004
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300096
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300028
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300026
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300044
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300082
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300046
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300068
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300104
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300030
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300006
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300048
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300080
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300038
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300060
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300050
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300090
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300088
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300058
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300054
+    - e1a536f74c7ef384a8d7132148ace0c8: 21300092
+    - b00f2daa228ec6c408a10403e8c2552b: 21300000
+    - 3400b92beb9f77c4e919dbdb39e9ec8c: 21300000
+    - 05c08d2d951f33243b9b36a3d6b46f29: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300078, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300076, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300012, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300002, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300098, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300102, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300074, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300062, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300014, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300100, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300024, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300040, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300008, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300032, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300034, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300042, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300052, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300036, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300094, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300084, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300070, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300064, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300066, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300106, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300000, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300056, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300072, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300086, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300004, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300096, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300028, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300026, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300044, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300082, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300046, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300068, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300104, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300030, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300006, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300048, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300080, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300038, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300060, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300050, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300090, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300088, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300058, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300054, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300092, guid: e1a536f74c7ef384a8d7132148ace0c8, type: 3}
+  - {fileID: 21300000, guid: b00f2daa228ec6c408a10403e8c2552b, type: 3}
+  - {fileID: 21300000, guid: 3400b92beb9f77c4e919dbdb39e9ec8c, type: 3}
+  - {fileID: 21300000, guid: 05c08d2d951f33243b9b36a3d6b46f29, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - ArrowButtonDefault
+  - SettingIcone
+  - FancyHat
+  - MissionsIcon
+  - UIButton
+  - UIBorderFilledOrange
+  - SliderBG
+  - FishboneIcone
+  - PartyHat
+  - UIButtonOrangeNoShadow
+  - CloseButton
+  - Background
+  - LeaderboardIcon
+  - InvicibilityPowerup
+  - LifePowerup
+  - Leaderboard
+  - TimeBar
+  - DayPreview
+  - UIButtonNoShadow
+  - UIBorderFilled01
+  - NoItem
+  - GameUIBackground
+  - PauseMenu
+  - StartButtonPressed
+  - StartButton
+  - RacoonIcone
+  - HandleSlider
+  - UIBorderFilledRed
+  - StoreIcon
+  - UIButtonBG
+  - MagnetPowerup
+  - WorkerHat
+  - Shop
+  - ArrowButtonGrey
+  - Missions
+  - PauseResume
+  - UIBorderLightGrey
+  - MultiplierPowerup
+  - Settings
+  - PauseButton
+  - ArrowButtonShadow
+  - NightPreview
+  - PremiumIcone
+  - LifeHeart
+  - UISliderFill
+  - UISliderBG
+  - ActivePowerUpBackground
+  - CatIcone
+  - UIButtonOrange
+  - Unity
+  - Logo
+  - UIBorderTransparent_0
+  m_RenderDataMap: {}
+  m_Tag: New Sprite Atlas
+  m_IsVariant: 0
