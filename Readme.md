@@ -26,6 +26,15 @@ Unity's endless runner game sample "Trash Dash" refactored.
   <img height="350" src="https://github.com/JoanStinson/EndlessRunnerRefactor/blob/master/preview.png">
 </p>
 
+## 🛠️ Refactor Improvements
+✅ Cleaned code<br>
+✅ Reduced draw calls by 40%<br>
+✅ Reduced build size by 48%<br>
+✅ Substituted GetComponent<> calls for TryGetComponent<><br>
+✅ Split classes into separate files<br>
+✅ Substituted singletons for a service locator<br>
+✅ Made gameplay and UI scalable for multiple resolutions<br>
+
 ## 📚 Bibliography
 * [Clean Architecture: A Craftsman's Guide to Software Structure and Design](https://www.amazon.es/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164/ref=sr_1_1?__mk_es_ES=ÅMÅŽÕÑ&crid=3R5ANE5N20NHP&keywords=Clean+Arquitecture%3A+A+Craftsman%27s+Guide+to+Software+Structure+and+Design&qid=1669111929&qu=eyJxc2MiOiIwLjA0IiwicXNhIjoiMC4wMCIsInFzcCI6IjAuMDAifQ%3D%3D&sprefix=clean+arquitecture+a+craftsman%27s+guide+to+software+structure+and+design%2Caps%2C74&sr=8-1)
 * [Clean Code: A Handbook of Agile Software Craftsmanship](https://www.amazon.es/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882/ref=sr_1_1?__mk_es_ES=ÅMÅŽÕÑ&crid=1FBSTPKK6F1ZE&keywords=Clean+Code%3A+A+Handbook+of+Agile+Software+Craftsmanship&qid=1669111959&qu=eyJxc2MiOiIwLjc4IiwicXNhIjoiMC4yMiIsInFzcCI6IjAuMzcifQ%3D%3D&sprefix=clean+code+a+handbook+of+agile+software+craftsmanship%2Caps%2C75&sr=8-1)
