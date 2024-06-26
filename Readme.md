@@ -1,45 +1,31 @@
-# Endless Runner Sample game
+# Endless Runner Refactor
+Unity's endless runner game sample "Trash Dash" refactored.
 
-_Current Used Unity Version : 2019.3_
+<p align="center">
+  <a>
+    <img alt="Made With Unity" src="https://img.shields.io/badge/made%20with-Unity-57b9d3.svg?logo=Unity">
+  </a>
+  <a>
+    <img alt="License" src="https://img.shields.io/github/license/JoanStinson/EndlessRunnerRefactor?logo=github">
+  </a>
+  <a>
+    <img alt="Last Commit" src="https://img.shields.io/github/last-commit/JoanStinson/EndlessRunnerRefactor?logo=Mapbox&color=orange">
+  </a>
+  <a>
+    <img alt="Repo Size" src="https://img.shields.io/github/repo-size/JoanStinson/EndlessRunnerRefactor?logo=VirtualBox">
+  </a>
+  <a>
+    <img alt="Downloads" src="https://img.shields.io/github/downloads/JoanStinson/EndlessRunnerRefactor/total?color=brightgreen">
+  </a>
+  <a>
+    <img alt="Last Release" src="https://img.shields.io/github/v/release/JoanStinson/EndlessRunnerRefactor?include_prereleases&logo=Dropbox&color=yellow">
+  </a>
+</p>
 
-This repository use tags for versioning. Look in the [Releases](https://github.com/Unity-Technologies/EndlessRunnerSampleGame/releases)
-section to download the source for specific other Unity version, or use git
-tag to checkout a specific version (e.g. `git checkout 18.2`)
+<p align="center">
+  <img height="350" src="https://github.com/JoanStinson/EndlessRunnerRefactor/blob/master/preview.png">
+</p>
 
-## Cloning note
-
-**This repository use git Large File Support.
-To clone it successfully, you will need to install git lfs** :
-
-- Download git lfs here : https://git-lfs.github.com/
-- run `git lfs install` in a command line
-
-Now you git clone should get the LFS files properly. For support of LFS in Git
-GUI client, please refer to their respective documentation
-
-## Description
-
-This project is a "endless runner" type mobile game made in Unity
-
-You can find [the project on the Unity asset store](https://assetstore.unity.com/packages/essentials/tutorial-projects/endless-runner-sample-game-87901)
-(Note that this is the old version not using Lightweight rendering pipeline & addressable, see note at the end of this file.
-Assets stor version will be updated when Addressable is out of preview)
-
-A INSTRUCTION.txt text file is inside the Asset folder to highlight diverse
-important points of the project
-
-An article is available [on the Unity Learn website](https://unity3d.com/learn/tutorials/topics/mobile-touch/trash-dash-code-walkthrough)
-highlighting some part of the code.
-
-You can also go visit the [wiki](https://github.com/Unity-Technologies/EndlessRunnerSampleGame/wiki)
-for more in depth details on the projects, how to build it and modify it.
-
-## Note for this Github version
-
-This version include feature not in the released game in the asset store version:
-
-- A basic tutorial when the game is played the first time
-- The use of the new Lightweight Rendering pipeline
-- The use of the new Addressable System that replace the Assets Bundles.
-
-**Documentation is still not up to date in the wiki. Updating is in progress**
+## 📚 Bibliography
+* [Clean Code: A Handbook of Agile Software Craftsmanship](https://www.amazon.es/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882/ref=sr_1_1?__mk_es_ES=ÅMÅŽÕÑ&crid=1FBSTPKK6F1ZE&keywords=Clean+Code%3A+A+Handbook+of+Agile+Software+Craftsmanship&qid=1669111959&qu=eyJxc2MiOiIwLjc4IiwicXNhIjoiMC4yMiIsInFzcCI6IjAuMzcifQ%3D%3D&sprefix=clean+code+a+handbook+of+agile+software+craftsmanship%2Caps%2C75&sr=8-1)
+* [Working Effectively with Legacy Code](https://www.amazon.es/Working-Effectively-Legacy-Robert-Martin/dp/0131177052)
