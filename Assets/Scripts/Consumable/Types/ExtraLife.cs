@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using System;
-using System.Collections;
+﻿using System.Collections;
 
 public class ExtraLife : Consumable
 {
@@ -27,20 +25,27 @@ public class ExtraLife : Consumable
 		return 5;
 	}
 
-    public override bool CanBeUsed(CharacterInputController c)
+    public override bool CanBeUsed(CharacterInputController characterInputController)
     {
-        if (c.currentLife == c.maxLife)
+        if (characterInputController.currentLife == characterInputController.maxLife)
+        {
             return false;
+        }
 
         return true;
     }
 
-    public override IEnumerator Started(CharacterInputController c)
+    public override IEnumerator Started(CharacterInputController characterInputController)
     {
-        yield return base.Started(c);
-        if (c.currentLife < k_MaxLives)
-            c.currentLife += 1;
-		else
-            c.coins += k_CoinValue;
+        yield return base.Started(characterInputController);
+
+        if (characterInputController.currentLife < k_MaxLives)
+        {
+            characterInputController.currentLife += 1;
+        }
+        else
+        {
+            characterInputController.coins += k_CoinValue;
+        }
     }
 }

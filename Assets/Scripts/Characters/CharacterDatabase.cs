@@ -8,23 +8,25 @@ using System.Collections.Generic;
 /// </summary>
 public class CharacterDatabase
 {
-    static protected Dictionary<string, Character> m_CharactersDict;
+    public static Dictionary<string, Character> dictionary { get { return m_CharactersDict; } }
+    public static bool loaded { get { return m_Loaded; } }
 
-    static public Dictionary<string, Character> dictionary {  get { return m_CharactersDict; } }
+    protected static Dictionary<string, Character> m_CharactersDict;
+    protected static bool m_Loaded = false;
 
-    static protected bool m_Loaded = false;
-    static public bool loaded { get { return m_Loaded; } }
-
-    static public Character GetCharacter(string type)
+    public static Character GetCharacter(string type)
     {
-        Character c;
-        if (m_CharactersDict == null || !m_CharactersDict.TryGetValue(type, out c))
-            return null;
+        Character character;
 
-        return c;
+        if (m_CharactersDict == null || !m_CharactersDict.TryGetValue(type, out character))
+        {
+            return null;
+        }
+
+        return character;
     }
 
-    static public IEnumerator LoadDatabase()
+    public static IEnumerator LoadDatabase()
     {
         if (m_CharactersDict == null)
         {
@@ -32,10 +34,10 @@ public class CharacterDatabase
 
             yield return Addressables.LoadAssetsAsync<GameObject>("characters", op =>
             {
-                Character c = op.GetComponent<Character>();
-                if (c != null)
+                var character = op.GetComponent<Character>();
+                if (character != null)
                 {
-                    m_CharactersDict.Add(c.characterName, c);
+                    m_CharactersDict.Add(character.characterName, character);
                 }
             });
 

@@ -7,8 +7,6 @@ using UnityEngine.AddressableAssets;
 /// </summary>
 public abstract class Consumable : MonoBehaviour
 {
-    public float duration;
-
     public enum ConsumableType
     {
         NONE,
@@ -16,17 +14,17 @@ public abstract class Consumable : MonoBehaviour
         SCORE_MULTIPLAYER,
         INVINCIBILITY,
         EXTRALIFE,
-		MAX_COUNT
+        MAX_COUNT
     }
 
+    public bool active { get { return m_Active; } }
+    public float timeActive { get { return m_SinceStart; } }
+
+    public float duration;
     public Sprite icon;
-	public AudioClip activatedSound;
-    //public ParticleSystem activatedParticle;
+    public AudioClip activatedSound;
     public AssetReference ActivatedParticleReference;
     public bool canBeSpawned = true;
-
-    public bool active {  get { return m_Active; } }
-    public float timeActive {  get { return m_SinceStart; } }
 
     protected bool m_Active = true;
     protected float m_SinceStart;
@@ -38,7 +36,7 @@ public abstract class Consumable : MonoBehaviour
     public abstract ConsumableType GetConsumableType();
     public abstract string GetConsumableName();
     public abstract int GetPrice();
-	public abstract int GetPremiumCost();
+    public abstract int GetPremiumCost();
 
     public void ResetTime()
     {
@@ -46,36 +44,38 @@ public abstract class Consumable : MonoBehaviour
     }
 
     //override this to do test to make a consumable not usable (e.g. used by the ExtraLife to avoid using it when at full health)
-    public virtual bool CanBeUsed(CharacterInputController c)
+    public virtual bool CanBeUsed(CharacterInputController characterInputController)
     {
         return true;
     }
 
-    public virtual IEnumerator Started(CharacterInputController c)
+    public virtual IEnumerator Started(CharacterInputController characterInputController)
     {
         m_SinceStart = 0;
 
-		if (activatedSound != null)
-		{
-			c.powerupSource.clip = activatedSound;
-			c.powerupSource.Play();
-		}
+        if (activatedSound != null)
+        {
+            characterInputController.powerupSource.clip = activatedSound;
+            characterInputController.powerupSource.Play();
+        }
 
-        if(ActivatedParticleReference != null)
+        if (ActivatedParticleReference != null)
         {
             //Addressables 1.0.1-preview
             var op = ActivatedParticleReference.InstantiateAsync();
             yield return op;
             m_ParticleSpawned = op.Result.GetComponent<ParticleSystem>();
             if (!m_ParticleSpawned.main.loop)
+            {
                 StartCoroutine(TimedRelease(m_ParticleSpawned.gameObject, m_ParticleSpawned.main.duration));
+            }
 
-            m_ParticleSpawned.transform.SetParent(c.characterCollider.transform);
+            m_ParticleSpawned.transform.SetParent(characterInputController.characterCollider.transform);
             m_ParticleSpawned.transform.localPosition = op.Result.transform.position;
         }
-	}
+    }
 
-    IEnumerator TimedRelease(GameObject obj, float time)
+    private IEnumerator TimedRelease(GameObject obj, float time)
     {
         yield return new WaitForSeconds(time);
         Addressables.ReleaseInstance(obj);
@@ -97,16 +97,21 @@ public abstract class Consumable : MonoBehaviour
         if (m_ParticleSpawned != null)
         {
             if (m_ParticleSpawned.main.loop)
+            {
                 Addressables.ReleaseInstance(m_ParticleSpawned.gameObject);
+            }
         }
 
         if (activatedSound != null && c.powerupSource.clip == activatedSound)
+        {
             c.powerupSource.Stop(); //if this one the one using the audio source stop it
+        }
 
         for (int i = 0; i < c.consumables.Count; ++i)
         {
+            //if there is still an active consumable that have a sound, this is the one playing now
             if (c.consumables[i].active && c.consumables[i].activatedSound != null)
-            {//if there is still an active consumable that have a sound, this is the one playing now
+            {
                 c.powerupSource.clip = c.consumables[i].activatedSound;
                 c.powerupSource.Play();
             }

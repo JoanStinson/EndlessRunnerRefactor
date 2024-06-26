@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -20,18 +19,17 @@ public abstract class MissionBase
         MAX
     }
 
+    public bool isComplete { get { return (progress / max) >= 1.0f; } }
     public float progress;
     public float max;
     public int reward;
-
-    public bool isComplete { get { return (progress / max) >= 1.0f; } }
 
     public void Serialize(BinaryWriter w)
     {
         w.Write(progress);
         w.Write(max);
         w.Write(reward);
-    } 
+    }
 
     public void Deserialize(BinaryReader r)
     {
@@ -40,8 +38,7 @@ public abstract class MissionBase
         reward = r.ReadInt32();
     }
 
-	public virtual bool HaveProgressBar() { return true; }
-
+    public virtual bool HaveProgressBar() { return true; }
     public abstract void Created();
     public abstract MissionType GetMissionType();
     public abstract string GetMissionDesc();
@@ -54,12 +51,16 @@ public abstract class MissionBase
         {
             case MissionType.SINGLE_RUN:
                 return new SingleRunMission();
+
             case MissionType.PICKUP:
                 return new PickupMission();
+
             case MissionType.OBSTACLE_JUMP:
                 return new BarrierJumpMission();
+
             case MissionType.SLIDING:
                 return new SlidingMission();
+
             case MissionType.MULTIPLIER:
                 return new MultiplierMission();
         }
@@ -80,12 +81,12 @@ public class SingleRunMission : MissionBase
         progress = 0;
     }
 
-	public override bool HaveProgressBar()
-	{
-		return false;
-	}
+    public override bool HaveProgressBar()
+    {
+        return false;
+    }
 
-	public override string GetMissionDesc()
+    public override string GetMissionDesc()
     {
         return "Run " + ((int)max) + "m in a single run";
     }
@@ -108,13 +109,12 @@ public class SingleRunMission : MissionBase
 
 public class PickupMission : MissionBase
 {
-    int previousCoinAmount;
+    private int previousCoinAmount;
 
     public override void Created()
     {
         float[] maxValues = { 1000, 2000, 3000, 4000 };
         int choosen = Random.Range(0, maxValues.Length);
-
         max = maxValues[choosen];
         reward = choosen + 1;
         progress = 0;
@@ -146,12 +146,13 @@ public class PickupMission : MissionBase
 
 public class BarrierJumpMission : MissionBase
 {
-    Obstacle m_Previous;
-    Collider[] m_Hits;
 
     protected const int k_HitColliderCount = 8;
     protected readonly Vector3 k_CharacterColliderSizeOffset = new Vector3(-0.3f, 2f, -0.3f);
-    
+
+    private Obstacle m_Previous;
+    private Collider[] m_Hits;
+
     public override void Created()
     {
         float[] maxValues = { 20, 50, 75, 100 };
@@ -180,20 +181,20 @@ public class BarrierJumpMission : MissionBase
 
     public override void Update(TrackManager manager)
     {
-        if(manager.characterController.isJumping)
+        if (manager.characterController.isJumping)
         {
             Vector3 boxSize = manager.characterController.characterCollider.collider.size + k_CharacterColliderSizeOffset;
             Vector3 boxCenter = manager.characterController.transform.position - Vector3.up * boxSize.y * 0.5f;
 
             int count = Physics.OverlapBoxNonAlloc(boxCenter, boxSize * 0.5f, m_Hits);
 
-            for(int i = 0; i < count; ++i)
+            for (int i = 0; i < count; ++i)
             {
                 Obstacle obs = m_Hits[i].GetComponent<Obstacle>();
 
-                if(obs != null && obs is AllLaneObstacle)
+                if (obs != null && obs is AllLaneObstacle)
                 {
-                    if(obs != m_Previous)
+                    if (obs != m_Previous)
                     {
                         progress += 1;
                     }
@@ -207,13 +208,12 @@ public class BarrierJumpMission : MissionBase
 
 public class SlidingMission : MissionBase
 {
-    float m_PreviousWorldDist;
+    private float m_PreviousWorldDist;
 
     public override void Created()
     {
-        float[] maxValues = { 20, 30, 75, 150};
+        float[] maxValues = { 20, 30, 75, 150 };
         int choosen = Random.Range(0, maxValues.Length);
-
         reward = choosen + 1;
         max = maxValues[choosen];
         progress = 0;
@@ -236,7 +236,7 @@ public class SlidingMission : MissionBase
 
     public override void Update(TrackManager manager)
     {
-        if(manager.characterController.isSliding)
+        if (manager.characterController.isSliding)
         {
             float dist = manager.worldDistance - m_PreviousWorldDist;
             progress += dist;
@@ -248,12 +248,12 @@ public class SlidingMission : MissionBase
 
 public class MultiplierMission : MissionBase
 {
-	public override bool HaveProgressBar()
-	{
-		return false;
-	}
+    public override bool HaveProgressBar()
+    {
+        return false;
+    }
 
-	public override void Created()
+    public override void Created()
     {
         float[] maxValue = { 3, 5, 8, 10 };
         int choosen = Random.Range(0, maxValue.Length);
@@ -282,6 +282,8 @@ public class MultiplierMission : MissionBase
     public override void Update(TrackManager manager)
     {
         if (manager.multiplier > progress)
+        {
             progress = manager.multiplier;
+        }
     }
 }

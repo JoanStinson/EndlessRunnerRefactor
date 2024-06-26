@@ -1,10 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine.AddressableAssets;
-using UnityEngine.Analytics;
-using UnityEngine.ResourceManagement;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using GameObject = UnityEngine.GameObject;
 
@@ -30,11 +27,7 @@ using UnityEngine.Analytics;
 /// </summary>
 public class TrackManager : MonoBehaviour
 {
-    static public TrackManager instance { get { return s_Instance; } }
-    static protected TrackManager s_Instance;
-
-    static int s_StartHash = Animator.StringToHash("Start");
-
+    public static TrackManager instance { get { return s_Instance; } }
     public delegate int MultiplierModifier(int current);
     public MultiplierModifier modifyMultiply;
 
@@ -44,7 +37,6 @@ public class TrackManager : MonoBehaviour
     public float maxSpeed = 10.0f;
     public int speedStep = 4;
     public float laneOffset = 1.0f;
-
     public bool invincible = false;
 
     [Header("Objects")]
@@ -62,9 +54,7 @@ public class TrackManager : MonoBehaviour
     public System.Action<TrackSegment> currentSegementChanged;
 
     public int trackSeed { get { return m_TrackSeed; } set { m_TrackSeed = value; } }
-
     public float timeToStart { get { return m_TimeToStart; } }  // Will return -1 if already started (allow to update UI)
-
     public int score { get { return m_Score; } }
     public int multiplier { get { return m_Multiplier; } }
     public float currentSegmentDistance { get { return m_CurrentSegmentDistance; } }
@@ -72,54 +62,17 @@ public class TrackManager : MonoBehaviour
     public float speed { get { return m_Speed; } }
     public float speedRatio { get { return (m_Speed - minSpeed) / (maxSpeed - minSpeed); } }
     public int currentZone { get { return m_CurrentZone; } }
-
     public TrackSegment currentSegment { get { return m_Segments[0]; } }
     public List<TrackSegment> segments { get { return m_Segments; } }
     public ThemeData currentTheme { get { return m_CurrentThemeData; } }
-
     public bool isMoving { get { return m_IsMoving; } }
     public bool isRerun { get { return m_Rerun; } set { m_Rerun = value; } }
-
     public bool isTutorial { get { return m_IsTutorial; } set { m_IsTutorial = value; } }
     public bool isLoaded { get; set; }
     //used by the obstacle spawning code in the tutorial, as it need to spawn the 1st obstacle in the middle lane
     public bool firstObstacle { get; set; }
 
-    protected float m_TimeToStart = -1.0f;
-
-    // If this is set to -1, random seed is init to system clock, otherwise init to that value
-    // Allow to play the same game multiple time (useful to make specific competition/challenge fair between players)
-    protected int m_TrackSeed = -1;
-
-    protected float m_CurrentSegmentDistance;
-    protected float m_TotalWorldDistance;
-    protected bool m_IsMoving;
-    protected float m_Speed;
-
-    protected float m_TimeSincePowerup;     // The higher it goes, the higher the chance of spawning one
-    protected float m_TimeSinceLastPremium;
-
-    protected int m_Multiplier;
-
-    protected List<TrackSegment> m_Segments = new List<TrackSegment>();
-    protected List<TrackSegment> m_PastSegments = new List<TrackSegment>();
-    protected int m_SafeSegementLeft;
-
-    protected ThemeData m_CurrentThemeData;
-    protected int m_CurrentZone;
-    protected float m_CurrentZoneDistance;
-    protected int m_PreviousSegment = -1;
-
-    protected int m_Score;
-    protected float m_ScoreAccum;
-    protected bool m_Rerun;     // This lets us know if we are entering a game over (ads) state or starting a new game (see GameState)
-
-    protected bool m_IsTutorial; //Tutorial is a special run that don't chance section until the tutorial step is "validated" by the TutorialState.
-    
-    Vector3 m_CameraOriginalPos = Vector3.zero;
-    
-    const float k_FloatingOriginThreshold = 10000f;
-
+    protected static TrackManager s_Instance;
     protected const float k_CountdownToStartLength = 5f;
     protected const float k_CountdownSpeed = 1.5f;
     protected const float k_StartingSegmentDistance = 2f;
@@ -128,7 +81,37 @@ public class TrackManager : MonoBehaviour
     protected const int k_DesiredSegmentCount = 10;
     protected const float k_SegmentRemovalDistance = -30f;
     protected const float k_Acceleration = 0.2f;
-    
+
+    protected float m_TimeToStart = -1.0f;
+    // If this is set to -1, random seed is init to system clock, otherwise init to that value
+    // Allow to play the same game multiple time (useful to make specific competition/challenge fair between players)
+    protected int m_TrackSeed = -1;
+    protected float m_CurrentSegmentDistance;
+    protected float m_TotalWorldDistance;
+    protected bool m_IsMoving;
+    protected float m_Speed;
+    protected float m_TimeSincePowerup;     // The higher it goes, the higher the chance of spawning one
+    protected float m_TimeSinceLastPremium;
+    protected int m_Multiplier;
+    protected List<TrackSegment> m_Segments = new List<TrackSegment>();
+    protected List<TrackSegment> m_PastSegments = new List<TrackSegment>();
+    protected int m_SafeSegementLeft;
+    protected ThemeData m_CurrentThemeData;
+    protected int m_CurrentZone;
+    protected float m_CurrentZoneDistance;
+    protected int m_PreviousSegment = -1;
+    protected int m_Score;
+    protected float m_ScoreAccum;
+    protected bool m_Rerun;     // This lets us know if we are entering a game over (ads) state or starting a new game (see GameState)
+    protected bool m_IsTutorial; //Tutorial is a special run that don't chance section until the tutorial step is "validated" by the TutorialState.
+
+    private static int s_StartHash = Animator.StringToHash("Start");
+    private const float k_FloatingOriginThreshold = 10000f;
+    private readonly Vector3 _offScreenSpawnPos = new Vector3(-100f, -100f, -100f);
+    private Vector3 m_CameraOriginalPos = Vector3.zero;
+    private int _parallaxRootChildren = 0;
+    private int _spawnedSegments = 0;
+
     protected void Awake()
     {
         m_ScoreAccum = 0.0f;
@@ -140,7 +123,9 @@ public class TrackManager : MonoBehaviour
         characterController.StartMoving();
         m_IsMoving = true;
         if (isRestart)
+        {
             m_Speed = minSpeed;
+        }
     }
 
     public void StopMove()
@@ -148,7 +133,7 @@ public class TrackManager : MonoBehaviour
         m_IsMoving = false;
     }
 
-    IEnumerator WaitToStart()
+    private IEnumerator WaitToStart()
     {
         characterController.character.animator.Play(s_StartHash);
         float length = k_CountdownToStartLength;
@@ -178,16 +163,19 @@ public class TrackManager : MonoBehaviour
         {
             firstObstacle = true;
             m_CameraOriginalPos = Camera.main.transform.position;
-            
+
             if (m_TrackSeed != -1)
+            {
                 Random.InitState(m_TrackSeed);
+            }
             else
+            {
                 Random.InitState((int)System.DateTime.Now.Ticks);
+            }
 
             // Since this is not a rerun, init the whole system (on rerun we want to keep the states we had on death)
             m_CurrentSegmentDistance = k_StartingSegmentDistance;
             m_TotalWorldDistance = 0.0f;
-
             characterController.gameObject.SetActive(true);
 
             //Addressables 1.0.1-preview
@@ -201,44 +189,38 @@ public class TrackManager : MonoBehaviour
                 Debug.LogWarning(string.Format("Unable to load character {0}.", PlayerData.instance.characters[PlayerData.instance.usedCharacter]));
                 yield break;
             }
+
             Character player = op.Result.GetComponent<Character>();
-
             player.SetupAccesory(PlayerData.instance.usedAccessory);
-
             characterController.character = player;
             characterController.trackManager = this;
-
             characterController.Init();
             characterController.CheatInvincible(invincible);
-            
-            //Instantiate(CharacterDatabase.GetCharacter(PlayerData.instance.characters[PlayerData.instance.usedCharacter]), Vector3.zero, Quaternion.identity);
             player.transform.SetParent(characterController.characterCollider.transform, false);
             Camera.main.transform.SetParent(characterController.transform, true);
 
             if (m_IsTutorial)
+            {
                 m_CurrentThemeData = tutorialThemeData;
+            }
             else
+            {
                 m_CurrentThemeData = ThemeDatabase.GetThemeData(PlayerData.instance.themes[PlayerData.instance.usedTheme]);
+            }
 
             m_CurrentZone = 0;
             m_CurrentZoneDistance = 0;
-
             skyMeshFilter.sharedMesh = m_CurrentThemeData.skyMesh;
             RenderSettings.fogColor = m_CurrentThemeData.fogColor;
             RenderSettings.fog = true;
-
             gameObject.SetActive(true);
             characterController.gameObject.SetActive(true);
             characterController.coins = 0;
             characterController.premium = 0;
-
             m_Score = 0;
             m_ScoreAccum = 0;
-
             m_SafeSegementLeft = m_IsTutorial ? 0 : k_StartingSafeSegments;
-
             Coin.coinPool = new Pooler(currentTheme.collectiblePrefab, k_StartingCoinPoolSize);
-
             PlayerData.instance.StartRunMissions(this);
 
 #if UNITY_ANALYTICS
@@ -264,26 +246,22 @@ public class TrackManager : MonoBehaviour
             _spawnedSegments--;
         }
 
-        for (int i = 0; i < m_PastSegments.Count; ++i)
+        for (int i = 0; i < m_PastSegments.Count; i++)
         {
             Addressables.ReleaseInstance(m_PastSegments[i].gameObject);
         }
 
         m_Segments.Clear();
         m_PastSegments.Clear();
-
         characterController.End();
-
         gameObject.SetActive(false);
         Addressables.ReleaseInstance(characterController.character.gameObject);
         characterController.character = null;
-
         Camera.main.transform.SetParent(null);
         Camera.main.transform.position = m_CameraOriginalPos;
-
         characterController.gameObject.SetActive(false);
 
-        for (int i = 0; i < parallaxRoot.childCount; ++i)
+        for (int i = 0; i < parallaxRoot.childCount; i++)
         {
             _parallaxRootChildren--;
             Destroy(parallaxRoot.GetChild(i).gameObject);
@@ -297,10 +275,7 @@ public class TrackManager : MonoBehaviour
         }
     }
 
-
-    private int _parallaxRootChildren = 0;
-    private int _spawnedSegments = 0;
-    void Update()
+    private void Update()
     {
         while (_spawnedSegments < (m_IsTutorial ? 4 : k_DesiredSegmentCount))
         {
@@ -335,7 +310,9 @@ public class TrackManager : MonoBehaviour
         }
 
         if (!m_IsMoving)
+        {
             return;
+        }
 
         float scaledSpeed = m_Speed * Time.deltaTime;
         m_ScoreAccum += scaledSpeed;
@@ -344,7 +321,6 @@ public class TrackManager : MonoBehaviour
         int intScore = Mathf.FloorToInt(m_ScoreAccum);
         if (intScore != 0) AddScore(intScore);
         m_ScoreAccum -= intScore;
-
         m_TotalWorldDistance += scaledSpeed;
         m_CurrentSegmentDistance += scaledSpeed;
 
@@ -358,15 +334,16 @@ public class TrackManager : MonoBehaviour
             m_Segments.RemoveAt(0);
             _spawnedSegments--;
 
-            if (currentSegementChanged != null) currentSegementChanged.Invoke(m_Segments[0]);
+            if (currentSegementChanged != null)
+            {
+                currentSegementChanged.Invoke(m_Segments[0]);
+            }
         }
 
         Vector3 currentPos;
         Quaternion currentRot;
         Transform characterTransform = characterController.transform;
-
         m_Segments[0].GetPointAtInWorldUnit(m_CurrentSegmentDistance, out currentPos, out currentRot);
-
 
         // Floating origin implementation
         // Move the whole world back to 0,0,0 when we get too far away.
@@ -407,7 +384,7 @@ public class TrackManager : MonoBehaviour
 
         if (parallaxRoot != null && currentTheme.cloudPrefabs.Length > 0)
         {
-            for (int i = 0; i < parallaxRoot.childCount; ++i)
+            for (int i = 0; i < parallaxRoot.childCount; i++)
             {
                 Transform child = parallaxRoot.GetChild(i);
 
@@ -421,7 +398,7 @@ public class TrackManager : MonoBehaviour
         }
 
         // Still move past segment until they aren't visible anymore.
-        for (int i = 0; i < m_PastSegments.Count; ++i)
+        for (int i = 0; i < m_PastSegments.Count; i++)
         {
             if ((m_PastSegments[i].transform.position - currentPos).z < k_SegmentRemovalDistance)
             {
@@ -436,9 +413,13 @@ public class TrackManager : MonoBehaviour
         if (!m_IsTutorial)
         {
             if (m_Speed < maxSpeed)
+            {
                 m_Speed += k_Acceleration * Time.deltaTime;
+            }
             else
+            {
                 m_Speed = maxSpeed;
+            }
         }
 
         m_Multiplier = 1 + Mathf.FloorToInt((m_Speed - minSpeed) / (maxSpeed - minSpeed) * speedStep);
@@ -480,19 +461,23 @@ public class TrackManager : MonoBehaviour
     public void ChangeZone()
     {
         m_CurrentZone += 1;
+
         if (m_CurrentZone >= m_CurrentThemeData.zones.Length)
+        {
             m_CurrentZone = 0;
+        }
 
         m_CurrentZoneDistance = 0;
     }
 
-    private readonly Vector3 _offScreenSpawnPos = new Vector3(-100f, -100f, -100f);
     public IEnumerator SpawnNewSegment()
     {
         if (!m_IsTutorial)
         {
             if (m_CurrentThemeData.zones[m_CurrentZone].length < m_CurrentZoneDistance)
+            {
                 ChangeZone();
+            }
         }
 
         int segmentUse = Random.Range(0, m_CurrentThemeData.zones[m_CurrentZone].prefabList.Length);
@@ -524,12 +509,9 @@ public class TrackManager : MonoBehaviour
         Vector3 entryPoint;
         Quaternion entryRotation;
         newSegment.GetPointAt(0.0f, out entryPoint, out entryRotation);
-
-
         Vector3 pos = currentExitPoint + (newSegment.transform.position - entryPoint);
         newSegment.transform.position = pos;
         newSegment.manager = this;
-
         newSegment.transform.localScale = new Vector3((Random.value > 0.5f ? -1 : 1), 1, 1);
         newSegment.objectRoot.localScale = new Vector3(1.0f / newSegment.transform.localScale.x, 1, 1);
 
@@ -538,19 +520,23 @@ public class TrackManager : MonoBehaviour
             SpawnObstacle(newSegment);
         }
         else
+        {
             m_SafeSegementLeft -= 1;
+        }
 
         m_Segments.Add(newSegment);
 
-        if (newSegmentCreated != null) newSegmentCreated.Invoke(newSegment);
+        if (newSegmentCreated != null)
+        {
+            newSegmentCreated.Invoke(newSegment);
+        }
     }
-
 
     public void SpawnObstacle(TrackSegment segment)
     {
         if (segment.possibleObstacles.Length != 0)
         {
-            for (int i = 0; i < segment.obstaclePositions.Length; ++i)
+            for (int i = 0; i < segment.obstaclePositions.Length; i++)
             {
                 AssetReference assetRef = segment.possibleObstacles[Random.Range(0, segment.possibleObstacles.Length)];
                 StartCoroutine(SpawnFromAssetReference(assetRef, segment, i));
@@ -563,13 +549,17 @@ public class TrackManager : MonoBehaviour
     private IEnumerator SpawnFromAssetReference(AssetReference reference, TrackSegment segment, int posIndex)
     {
         AsyncOperationHandle op = Addressables.LoadAssetAsync<GameObject>(reference);
-        yield return op; 
+        yield return op;
         GameObject obj = op.Result as GameObject;
+
         if (obj != null)
         {
             Obstacle obstacle = obj.GetComponent<Obstacle>();
+
             if (obstacle != null)
+            {
                 yield return obstacle.Spawn(segment, segment.obstaclePositions[posIndex]);
+            }
         }
     }
 
@@ -580,7 +570,6 @@ public class TrackManager : MonoBehaviour
             const float increment = 1.5f;
             float currentWorldPos = 0.0f;
             int currentLane = Random.Range(0, 3);
-
             float powerupChance = Mathf.Clamp01(Mathf.Floor(m_TimeSincePowerup) * 0.5f * 0.001f);
             float premiumChance = Mathf.Clamp01(Mathf.Floor(m_TimeSinceLastPremium) * 0.5f * 0.0001f);
 
@@ -589,10 +578,9 @@ public class TrackManager : MonoBehaviour
                 Vector3 pos;
                 Quaternion rot;
                 segment.GetPointAtInWorldUnit(currentWorldPos, out pos, out rot);
-
-
                 bool laneValid = true;
                 int testedLane = currentLane;
+
                 while (Physics.CheckSphere(pos + ((testedLane - 1) * laneOffset * (rot * Vector3.right)), 0.4f, 1 << 9))
                 {
                     testedLane = (testedLane + 1) % 3;
@@ -609,7 +597,6 @@ public class TrackManager : MonoBehaviour
                 if (laneValid)
                 {
                     pos = pos + ((currentLane - 1) * laneOffset * (rot * Vector3.right));
-
 
                     GameObject toUse = null;
                     if (Random.value < powerupChance)

@@ -10,12 +10,9 @@ using UnityEngine.AddressableAssets;
 [RequireComponent(typeof(AudioSource))]
 public class CharacterCollider : MonoBehaviour
 {
-	static int s_HitHash = Animator.StringToHash("Hit");
-    static int s_BlinkingValueHash;
-
     // Used mainly by by analytics, but not in an analytics ifdef block 
     // so that the data is available to anything (e.g. could be used for player stat saved locally etc.)
-	public struct DeathEvent
+    public struct DeathEvent
     {
         public string character;
         public string obstacleType;
@@ -27,33 +24,31 @@ public class CharacterCollider : MonoBehaviour
     }
 
     public CharacterInputController controller;
+    public ParticleSystem koParticle;
 
-	public ParticleSystem koParticle;
-
-	[Header("Sound")]
-	public AudioClip coinSound;
-	public AudioClip premiumSound;
+    [Header("Sound")]
+    public AudioClip coinSound;
+    public AudioClip premiumSound;
 
     public DeathEvent deathData { get { return m_DeathData; } }
     public new BoxCollider collider { get { return m_Collider; } }
-
-	public new AudioSource audio { get { return m_Audio; } }
+    public new AudioSource audio { get { return m_Audio; } }
+    public bool tutorialHitObstacle { get { return m_TutorialHitObstacle; } set { m_TutorialHitObstacle = value; } }
 
     [HideInInspector]
-	public List<GameObject> magnetCoins = new List<GameObject>();
+    public List<GameObject> magnetCoins = new List<GameObject>();
 
-    public bool tutorialHitObstacle {  get { return m_TutorialHitObstacle;} set { m_TutorialHitObstacle = value;} }
+    private static int s_HitHash = Animator.StringToHash("Hit");
+    private static int s_BlinkingValueHash;
 
     protected bool m_TutorialHitObstacle;
-
     protected bool m_Invincible;
     protected DeathEvent m_DeathData;
-	protected BoxCollider m_Collider;
-	protected AudioSource m_Audio;
+    protected BoxCollider m_Collider;
+    protected AudioSource m_Audio;
+    protected float m_StartingColliderHeight;
 
-	protected float m_StartingColliderHeight;
-
-    protected readonly Vector3 k_SlidingColliderScale = new Vector3 (1.0f, 0.5f, 1.0f);
+    protected readonly Vector3 k_SlidingColliderScale = new Vector3(1.0f, 0.5f, 1.0f);
     protected readonly Vector3 k_NotSlidingColliderScale = new Vector3(1.0f, 2.0f, 1.0f);
 
     protected const float k_MagnetSpeed = 10f;
@@ -64,83 +59,85 @@ public class CharacterCollider : MonoBehaviour
 
     protected void Start()
     {
-		m_Collider = GetComponent<BoxCollider>();
-		m_Audio = GetComponent<AudioSource>();
-		m_StartingColliderHeight = m_Collider.bounds.size.y;
-	}
+        m_Collider = GetComponent<BoxCollider>();
+        m_Audio = GetComponent<AudioSource>();
+        m_StartingColliderHeight = m_Collider.bounds.size.y;
+    }
 
-	public void Init()
-	{
-		koParticle.gameObject.SetActive(false);
+    public void Init()
+    {
+        koParticle.gameObject.SetActive(false);
+        s_BlinkingValueHash = Shader.PropertyToID("_BlinkingValue");
+        m_Invincible = false;
+    }
 
-		s_BlinkingValueHash = Shader.PropertyToID("_BlinkingValue");
-		m_Invincible = false;
-	}
-
-	public void Slide(bool sliding)
-	{
-		if (sliding)
-		{
-			m_Collider.size = Vector3.Scale(m_Collider.size, k_SlidingColliderScale);
-			m_Collider.center = m_Collider.center - new Vector3(0.0f, m_Collider.size.y * 0.5f, 0.0f);
-		}
-		else
-		{
-			m_Collider.center = m_Collider.center + new Vector3(0.0f, m_Collider.size.y * 0.5f, 0.0f);
-			m_Collider.size = Vector3.Scale(m_Collider.size, k_NotSlidingColliderScale);
-		}
-	}
+    public void Slide(bool sliding)
+    {
+        if (sliding)
+        {
+            m_Collider.size = Vector3.Scale(m_Collider.size, k_SlidingColliderScale);
+            m_Collider.center = m_Collider.center - new Vector3(0.0f, m_Collider.size.y * 0.5f, 0.0f);
+        }
+        else
+        {
+            m_Collider.center = m_Collider.center + new Vector3(0.0f, m_Collider.size.y * 0.5f, 0.0f);
+            m_Collider.size = Vector3.Scale(m_Collider.size, k_NotSlidingColliderScale);
+        }
+    }
 
     protected void Update()
-	{
-        // Every coin registered to the magnetCoin list (used by the magnet powerup exclusively, but could be used by other power up) is dragged toward the player.
-		for(int i = 0; i < magnetCoins.Count; ++i)
-		{
-            magnetCoins[i].transform.position = Vector3.MoveTowards(magnetCoins[i].transform.position, transform.position, k_MagnetSpeed * Time.deltaTime);
-		}
-	}
-
-    protected void OnTriggerEnter(Collider c)
     {
-        if (c.gameObject.layer == k_CoinsLayerIndex)
-		{
-			if (magnetCoins.Contains(c.gameObject))
-				magnetCoins.Remove(c.gameObject);
+        // Every coin registered to the magnetCoin list (used by the magnet powerup exclusively, but could be used by other power up) is dragged toward the player.
+        for (int i = 0; i < magnetCoins.Count; i++)
+        {
+            magnetCoins[i].transform.position = Vector3.MoveTowards(magnetCoins[i].transform.position, transform.position, k_MagnetSpeed * Time.deltaTime);
+        }
+    }
 
-			if (c.GetComponent<Coin>().isPremium)
+    protected void OnTriggerEnter(Collider collider)
+    {
+        if (collider.gameObject.layer == k_CoinsLayerIndex)
+        {
+            if (magnetCoins.Contains(collider.gameObject))
             {
-				Addressables.ReleaseInstance(c.gameObject);
+                magnetCoins.Remove(collider.gameObject);
+            }
+
+            if (collider.GetComponent<Coin>().isPremium)
+            {
+                Addressables.ReleaseInstance(collider.gameObject);
                 PlayerData.instance.premium += 1;
                 controller.premium += 1;
-				m_Audio.PlayOneShot(premiumSound);
-			}
+                m_Audio.PlayOneShot(premiumSound);
+            }
             else
             {
-				Coin.coinPool.Free(c.gameObject);
+                Coin.coinPool.Free(collider.gameObject);
                 PlayerData.instance.coins += 1;
-				controller.coins += 1;
-				m_Audio.PlayOneShot(coinSound);
+                controller.coins += 1;
+                m_Audio.PlayOneShot(coinSound);
             }
         }
-        else if(c.gameObject.layer == k_ObstacleLayerIndex)
+        else if (collider.gameObject.layer == k_ObstacleLayerIndex)
         {
             if (m_Invincible || controller.IsCheatInvincible())
+            {
                 return;
+            }
 
             controller.StopMoving();
+            collider.enabled = false;
 
-			c.enabled = false;
+            var obstacle = collider.gameObject.GetComponent<Obstacle>();
 
-            Obstacle ob = c.gameObject.GetComponent<Obstacle>();
-
-			if (ob != null)
-			{
-				ob.Impacted();
-			}
-			else
-			{
-			    Addressables.ReleaseInstance(c.gameObject);
-			}
+            if (obstacle != null)
+            {
+                obstacle.Impacted();
+            }
+            else
+            {
+                Addressables.ReleaseInstance(collider.gameObject);
+            }
 
             if (TrackManager.instance.isTutorial)
             {
@@ -153,30 +150,28 @@ public class CharacterCollider : MonoBehaviour
 
             controller.character.animator.SetTrigger(s_HitHash);
 
-			if (controller.currentLife > 0)
-			{
-				m_Audio.PlayOneShot(controller.character.hitSound);
-                SetInvincible ();
-			}
+            if (controller.currentLife > 0)
+            {
+                m_Audio.PlayOneShot(controller.character.hitSound);
+                SetInvincible();
+            }
             // The collision killed the player, record all data to analytics.
-			else
-			{
-				m_Audio.PlayOneShot(controller.character.deathSound);
-
-				m_DeathData.character = controller.character.characterName;
-				m_DeathData.themeUsed = controller.trackManager.currentTheme.themeName;
-				m_DeathData.obstacleType = ob.GetType().ToString();
-				m_DeathData.coins = controller.coins;
-				m_DeathData.premium = controller.premium;
-				m_DeathData.score = controller.trackManager.score;
-				m_DeathData.worldDistance = controller.trackManager.worldDistance;
-
-			}
+            else
+            {
+                m_Audio.PlayOneShot(controller.character.deathSound);
+                m_DeathData.character = controller.character.characterName;
+                m_DeathData.themeUsed = controller.trackManager.currentTheme.themeName;
+                m_DeathData.obstacleType = obstacle.GetType().ToString();
+                m_DeathData.coins = controller.coins;
+                m_DeathData.premium = controller.premium;
+                m_DeathData.score = controller.trackManager.score;
+                m_DeathData.worldDistance = controller.trackManager.worldDistance;
+            }
         }
-        else if(c.gameObject.layer == k_PowerupLayerIndex)
+        else if (collider.gameObject.layer == k_PowerupLayerIndex)
         {
-            Consumable consumable = c.GetComponent<Consumable>();
-            if(consumable != null)
+            var consumable = collider.GetComponent<Consumable>();
+            if (consumable != null)
             {
                 controller.UseConsumable(consumable);
             }
@@ -189,39 +184,38 @@ public class CharacterCollider : MonoBehaviour
     }
 
     public void SetInvincible(float timer = k_DefaultInvinsibleTime)
-	{
-		StartCoroutine(InvincibleTimer(timer));
-	}
+    {
+        StartCoroutine(InvincibleTimer(timer));
+    }
 
     protected IEnumerator InvincibleTimer(float timer)
     {
         m_Invincible = true;
 
-		float time = 0;
-		float currentBlink = 1.0f;
-		float lastBlink = 0.0f; 
-		const float blinkPeriod = 0.1f;
+        float time = 0;
+        float currentBlink = 1.0f;
+        float lastBlink = 0.0f;
+        const float blinkPeriod = 0.1f;
 
-		while(time < timer && m_Invincible)
-		{
-			Shader.SetGlobalFloat(s_BlinkingValueHash, currentBlink);
+        while (time < timer && m_Invincible)
+        {
+            Shader.SetGlobalFloat(s_BlinkingValueHash, currentBlink);
 
-			// We do the check every frame instead of waiting for a full blink period as if the game slow down too much
-			// we are sure to at least blink every frame.
+            // We do the check every frame instead of waiting for a full blink period as if the game slow down too much
+            // we are sure to at least blink every frame.
             // If blink turns on and off in the span of one frame, we "miss" the blink, resulting in appearing not to blink.
             yield return null;
-			time += Time.deltaTime;
-			lastBlink += Time.deltaTime;
+            time += Time.deltaTime;
+            lastBlink += Time.deltaTime;
 
-			if (blinkPeriod < lastBlink)
-			{
-				lastBlink = 0;
-				currentBlink = 1.0f - currentBlink;
-			}
+            if (blinkPeriod < lastBlink)
+            {
+                lastBlink = 0;
+                currentBlink = 1.0f - currentBlink;
+            }
         }
 
-		Shader.SetGlobalFloat(s_BlinkingValueHash, 0.0f);
-
-		m_Invincible = false;
+        Shader.SetGlobalFloat(s_BlinkingValueHash, 0.0f);
+        m_Invincible = false;
     }
 }

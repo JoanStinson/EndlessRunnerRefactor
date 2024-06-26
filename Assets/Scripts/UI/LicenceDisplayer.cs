@@ -2,18 +2,18 @@
 
 public class LicenceDisplayer : MonoBehaviour
 {
-    void Start ()
+    private void Start()
     {
         PlayerData.Create();
 
-	    if(PlayerData.instance.licenceAccepted)
+        // If we have already accepted the licence, we close the popup, no need for it.
+        if (PlayerData.instance.licenceAccepted)
         {
-            // If we have already accepted the licence, we close the popup, no need for it.
             Close();
-        }	
-	}
-	
-	public void Accepted()
+        }
+    }
+
+    public void Accepted()
     {
         PlayerData.instance.licenceAccepted = true;
         PlayerData.instance.Save();

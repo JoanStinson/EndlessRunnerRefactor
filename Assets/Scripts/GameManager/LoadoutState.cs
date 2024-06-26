@@ -19,71 +19,62 @@ public class LoadoutState : AState
 
     [Header("Char UI")]
     public Text charNameDisplay;
-	public RectTransform charSelect;
-	public Transform charPosition;
+    public RectTransform charSelect;
+    public Transform charPosition;
 
-	[Header("Theme UI")]
-	public Text themeNameDisplay;
-	public RectTransform themeSelect;
-	public Image themeIcon;
+    [Header("Theme UI")]
+    public Text themeNameDisplay;
+    public RectTransform themeSelect;
+    public Image themeIcon;
 
-	[Header("PowerUp UI")]
-	public RectTransform powerupSelect;
-	public Image powerupIcon;
-	public Text powerupCount;
+    [Header("PowerUp UI")]
+    public RectTransform powerupSelect;
+    public Image powerupIcon;
+    public Text powerupCount;
     public Sprite noItemIcon;
 
-	[Header("Accessory UI")]
+    [Header("Accessory UI")]
     public RectTransform accessoriesSelector;
     public Text accesoryNameDisplay;
-	public Image accessoryIconDisplay;
+    public Image accessoryIconDisplay;
 
-	[Header("Other Data")]
-	public Leaderboard leaderboard;
+    [Header("Other Data")]
+    public Leaderboard leaderboard;
     public MissionUI missionPopup;
-	public Button runButton;
-
+    public Button runButton;
     public GameObject tutorialBlocker;
     public GameObject tutorialPrompt;
-
-	public MeshFilter skyMeshFilter;
+    public MeshFilter skyMeshFilter;
     public MeshFilter UIGroundFilter;
-
-	public AudioClip menuTheme;
-
+    public AudioClip menuTheme;
 
     [Header("Prefabs")]
     public ConsumableIcon consumableIcon;
 
-    Consumable.ConsumableType m_PowerupToUse = Consumable.ConsumableType.NONE;
+    protected const float k_CharacterRotationSpeed = 45f;
+    protected const string k_ShopSceneName = "shop";
+    protected const float k_OwnedAccessoriesCharacterOffset = -0.1f;
+    protected readonly Quaternion k_FlippedYAxisRotation = Quaternion.Euler(0f, 180f, 0f);
 
     protected GameObject m_Character;
     protected List<int> m_OwnedAccesories = new List<int>();
     protected int m_UsedAccessory = -1;
-	protected int m_UsedPowerupIndex;
+    protected int m_UsedPowerupIndex;
     protected bool m_IsLoadingCharacter;
-
-	protected Modifier m_CurrentModifier = new Modifier();
-
-    protected const float k_CharacterRotationSpeed = 45f;
-    protected const string k_ShopSceneName = "shop";
-    protected const float k_OwnedAccessoriesCharacterOffset = -0.1f;
+    protected Modifier m_CurrentModifier = new Modifier();
     protected int k_UILayer;
-    protected readonly Quaternion k_FlippedYAxisRotation = Quaternion.Euler (0f, 180f, 0f);
+
+    private Consumable.ConsumableType m_PowerupToUse = Consumable.ConsumableType.NONE;
 
     public override void Enter(AState from)
     {
         tutorialBlocker.SetActive(!PlayerData.instance.tutorialDone);
         tutorialPrompt.SetActive(false);
-
         inventoryCanvas.gameObject.SetActive(true);
         missionPopup.gameObject.SetActive(false);
-
         charNameDisplay.text = "";
         themeNameDisplay.text = "";
-
         k_UILayer = LayerMask.NameToLayer("UI");
-
         skyMeshFilter.gameObject.SetActive(true);
         UIGroundFilter.gameObject.SetActive(true);
 
@@ -91,7 +82,7 @@ public class LoadoutState : AState
         Shader.SetGlobalFloat("_BlinkingValue", 0.0f);
 
         if (MusicPlayer.instance.GetStem(0) != menuTheme)
-		{
+        {
             MusicPlayer.instance.SetStem(0, menuTheme);
             StartCoroutine(MusicPlayer.instance.RestartAllStems());
         }
@@ -99,11 +90,13 @@ public class LoadoutState : AState
         runButton.interactable = false;
         runButton.GetComponentInChildren<Text>().text = "Loading...";
 
-        if(m_PowerupToUse != Consumable.ConsumableType.NONE)
+        if (m_PowerupToUse != Consumable.ConsumableType.NONE)
         {
             //if we come back from a run and we don't have any more of the powerup we wanted to use, we reset the powerup to use to NONE
             if (!PlayerData.instance.consumables.ContainsKey(m_PowerupToUse) || PlayerData.instance.consumables[m_PowerupToUse] == 0)
+            {
                 m_PowerupToUse = Consumable.ConsumableType.NONE;
+            }
         }
 
         Refresh();
@@ -114,23 +107,25 @@ public class LoadoutState : AState
         missionPopup.gameObject.SetActive(false);
         inventoryCanvas.gameObject.SetActive(false);
 
-        if (m_Character != null) Addressables.ReleaseInstance(m_Character);
+        if (m_Character != null)
+        {
+            Addressables.ReleaseInstance(m_Character);
+        }
 
         GameState gs = to as GameState;
-
         skyMeshFilter.gameObject.SetActive(false);
         UIGroundFilter.gameObject.SetActive(false);
 
         if (gs != null)
         {
-			gs.currentModifier = m_CurrentModifier;
-			
-            // We reset the modifier to a default one, for next run (if a new modifier is applied, it will replace this default one before the run starts)
-			m_CurrentModifier = new Modifier();
+            gs.currentModifier = m_CurrentModifier;
 
-			if (m_PowerupToUse != Consumable.ConsumableType.NONE)
-			{
-				PlayerData.instance.Consume(m_PowerupToUse);
+            // We reset the modifier to a default one, for next run (if a new modifier is applied, it will replace this default one before the run starts)
+            m_CurrentModifier = new Modifier();
+
+            if (m_PowerupToUse != Consumable.ConsumableType.NONE)
+            {
+                PlayerData.instance.Consume(m_PowerupToUse);
                 Consumable inv = Instantiate(ConsumableDatabase.GetConsumbale(m_PowerupToUse));
                 inv.gameObject.SetActive(false);
                 gs.trackManager.characterController.inventory = inv;
@@ -140,8 +135,7 @@ public class LoadoutState : AState
 
     public void Refresh()
     {
-		PopulatePowerup();
-
+        PopulatePowerup();
         StartCoroutine(PopulateCharacters());
         StartCoroutine(PopulateTheme());
     }
@@ -156,37 +150,41 @@ public class LoadoutState : AState
         if (!runButton.interactable)
         {
             bool interactable = ThemeDatabase.loaded && CharacterDatabase.loaded;
-            if(interactable)
+
+            if (interactable)
             {
                 runButton.interactable = true;
                 runButton.GetComponentInChildren<Text>().text = "Run!";
-
                 //we can always enabled, as the parent will be disabled if tutorial is already done
                 tutorialPrompt.SetActive(true);
             }
         }
 
-        if(m_Character != null)
+        if (m_Character != null)
         {
             m_Character.transform.Rotate(0, k_CharacterRotationSpeed * Time.deltaTime, 0, Space.Self);
         }
 
-		charSelect.gameObject.SetActive(PlayerData.instance.characters.Count > 1);
-		themeSelect.gameObject.SetActive(PlayerData.instance.themes.Count > 1);
+        charSelect.gameObject.SetActive(PlayerData.instance.characters.Count > 1);
+        themeSelect.gameObject.SetActive(PlayerData.instance.themes.Count > 1);
     }
 
-	public void GoToStore()
-	{
+    public void GoToStore()
+    {
         UnityEngine.SceneManagement.SceneManager.LoadScene(k_ShopSceneName, UnityEngine.SceneManagement.LoadSceneMode.Additive);
-	}
+    }
 
     public void ChangeCharacter(int dir)
     {
         PlayerData.instance.usedCharacter += dir;
         if (PlayerData.instance.usedCharacter >= PlayerData.instance.characters.Count)
+        {
             PlayerData.instance.usedCharacter = 0;
-        else if(PlayerData.instance.usedCharacter < 0)
-            PlayerData.instance.usedCharacter = PlayerData.instance.characters.Count-1;
+        }
+        else if (PlayerData.instance.usedCharacter < 0)
+        {
+            PlayerData.instance.usedCharacter = PlayerData.instance.characters.Count - 1;
+        }
 
         StartCoroutine(PopulateCharacters());
     }
@@ -195,14 +193,22 @@ public class LoadoutState : AState
     {
         m_UsedAccessory += dir;
         if (m_UsedAccessory >= m_OwnedAccesories.Count)
+        {
             m_UsedAccessory = -1;
+        }
         else if (m_UsedAccessory < -1)
-            m_UsedAccessory = m_OwnedAccesories.Count-1;
+        {
+            m_UsedAccessory = m_OwnedAccesories.Count - 1;
+        }
 
         if (m_UsedAccessory != -1)
+        {
             PlayerData.instance.usedAccessory = m_OwnedAccesories[m_UsedAccessory];
+        }
         else
+        {
             PlayerData.instance.usedAccessory = -1;
+        }
 
         SetupAccessory();
     }
@@ -211,9 +217,13 @@ public class LoadoutState : AState
     {
         PlayerData.instance.usedTheme += dir;
         if (PlayerData.instance.usedTheme >= PlayerData.instance.themes.Count)
+        {
             PlayerData.instance.usedTheme = 0;
+        }
         else if (PlayerData.instance.usedTheme < 0)
+        {
             PlayerData.instance.usedTheme = PlayerData.instance.themes.Count - 1;
+        }
 
         StartCoroutine(PopulateTheme());
     }
@@ -229,15 +239,14 @@ public class LoadoutState : AState
         }
 
         themeNameDisplay.text = t.themeName;
-		themeIcon.sprite = t.themeIcon;
-
-		skyMeshFilter.sharedMesh = t.skyMesh;
+        themeIcon.sprite = t.themeIcon;
+        skyMeshFilter.sharedMesh = t.skyMesh;
         UIGroundFilter.sharedMesh = t.UIGroundMesh;
-	}
+    }
 
     public IEnumerator PopulateCharacters()
     {
-		accessoriesSelector.gameObject.SetActive(false);
+        accessoriesSelector.gameObject.SetActive(false);
         PlayerData.instance.usedAccessory = -1;
         m_UsedAccessory = -1;
 
@@ -245,6 +254,7 @@ public class LoadoutState : AState
         {
             m_IsLoadingCharacter = true;
             GameObject newChar = null;
+
             while (newChar == null)
             {
                 Character c = CharacterDatabase.GetCharacter(PlayerData.instance.characters[PlayerData.instance.usedCharacter]);
@@ -252,9 +262,9 @@ public class LoadoutState : AState
                 if (c != null)
                 {
                     m_OwnedAccesories.Clear();
-                    for (int i = 0; i < c.accessories.Length; ++i)
+                    for (int i = 0; i < c.accessories.Length; i++)
                     {
-						// Check which accessories we own.
+                        // Check which accessories we own.
                         string compoundName = c.characterName + ":" + c.accessories[i].accessoryName;
                         if (PlayerData.instance.characterAccessories.Contains(compoundName))
                         {
@@ -271,8 +281,8 @@ public class LoadoutState : AState
                     {
                         pos.x = 0.0f;
                     }
-                    charPosition.transform.position = pos;
 
+                    charPosition.transform.position = pos;
                     accessoriesSelector.gameObject.SetActive(m_OwnedAccesories.Count > 0);
 
                     AsyncOperationHandle op = Addressables.InstantiateAsync(c.characterName);
@@ -284,32 +294,35 @@ public class LoadoutState : AState
                     }
                     newChar = op.Result as GameObject;
                     Helpers.SetRendererLayerRecursive(newChar, k_UILayer);
-					newChar.transform.SetParent(charPosition, false);
+                    newChar.transform.SetParent(charPosition, false);
                     newChar.transform.rotation = k_FlippedYAxisRotation;
 
                     if (m_Character != null)
+                    {
                         Addressables.ReleaseInstance(m_Character);
+                    }
 
                     m_Character = newChar;
                     charNameDisplay.text = c.characterName;
-
                     m_Character.transform.localPosition = Vector3.right * 1000;
                     //animator will take a frame to initialize, during which the character will be in a T-pose.
                     //So we move the character off screen, wait that initialised frame, then move the character back in place.
                     //That avoid an ugly "T-pose" flash time
                     yield return new WaitForEndOfFrame();
                     m_Character.transform.localPosition = Vector3.zero;
-
                     SetupAccessory();
                 }
                 else
+                {
                     yield return new WaitForSeconds(1.0f);
+                }
             }
+
             m_IsLoadingCharacter = false;
         }
-	}
+    }
 
-    void SetupAccessory()
+    private void SetupAccessory()
     {
         Character c = m_Character.GetComponent<Character>();
         c.SetupAccesory(PlayerData.instance.usedAccessory);
@@ -317,19 +330,19 @@ public class LoadoutState : AState
         if (PlayerData.instance.usedAccessory == -1)
         {
             accesoryNameDisplay.text = "None";
-			accessoryIconDisplay.enabled = false;
-		}
+            accessoryIconDisplay.enabled = false;
+        }
         else
         {
-			accessoryIconDisplay.enabled = true;
-			accesoryNameDisplay.text = c.accessories[PlayerData.instance.usedAccessory].accessoryName;
-			accessoryIconDisplay.sprite = c.accessories[PlayerData.instance.usedAccessory].accessoryIcon;
+            accessoryIconDisplay.enabled = true;
+            accesoryNameDisplay.text = c.accessories[PlayerData.instance.usedAccessory].accessoryName;
+            accessoryIconDisplay.sprite = c.accessories[PlayerData.instance.usedAccessory].accessoryIcon;
         }
     }
 
-	void PopulatePowerup()
-	{
-		powerupIcon.gameObject.SetActive(true);
+    private void PopulatePowerup()
+    {
+        powerupIcon.gameObject.SetActive(true);
 
         if (PlayerData.instance.consumables.Count > 0)
         {
@@ -351,45 +364,44 @@ public class LoadoutState : AState
         {
             powerupSelect.gameObject.SetActive(false);
         }
-	}
+    }
 
-	public void ChangeConsumable(int dir)
-	{
-		bool found = false;
-		do
-		{
-			m_UsedPowerupIndex += dir;
-			if(m_UsedPowerupIndex >= (int)Consumable.ConsumableType.MAX_COUNT)
-			{
-				m_UsedPowerupIndex = 0; 
-			}
-			else if(m_UsedPowerupIndex < 0)
-			{
-				m_UsedPowerupIndex = (int)Consumable.ConsumableType.MAX_COUNT - 1;
-			}
+    public void ChangeConsumable(int dir)
+    {
+        bool found = false;
+        do
+        {
+            m_UsedPowerupIndex += dir;
+            if (m_UsedPowerupIndex >= (int)Consumable.ConsumableType.MAX_COUNT)
+            {
+                m_UsedPowerupIndex = 0;
+            }
+            else if (m_UsedPowerupIndex < 0)
+            {
+                m_UsedPowerupIndex = (int)Consumable.ConsumableType.MAX_COUNT - 1;
+            }
 
-			int count = 0;
-			if(PlayerData.instance.consumables.TryGetValue((Consumable.ConsumableType)m_UsedPowerupIndex, out count) && count > 0)
-			{
-				found = true;
-			}
+            int count = 0;
+            if (PlayerData.instance.consumables.TryGetValue((Consumable.ConsumableType)m_UsedPowerupIndex, out count) && count > 0)
+            {
+                found = true;
+            }
 
-		} while (m_UsedPowerupIndex != 0 && !found);
+        } while (m_UsedPowerupIndex != 0 && !found);
 
-		m_PowerupToUse = (Consumable.ConsumableType)m_UsedPowerupIndex;
-		PopulatePowerup();
-	}
+        m_PowerupToUse = (Consumable.ConsumableType)m_UsedPowerupIndex;
+        PopulatePowerup();
+    }
 
-	public void UnequipPowerup()
-	{
-		m_PowerupToUse = Consumable.ConsumableType.NONE;
-	}
-	
+    public void UnequipPowerup()
+    {
+        m_PowerupToUse = Consumable.ConsumableType.NONE;
+    }
 
-	public void SetModifier(Modifier modifier)
-	{
-		m_CurrentModifier = modifier;
-	}
+    public void SetModifier(Modifier modifier)
+    {
+        m_CurrentModifier = modifier;
+    }
 
     public void StartGame()
     {
@@ -405,10 +417,10 @@ public class LoadoutState : AState
         manager.SwitchState("Game");
     }
 
-	public void Openleaderboard()
-	{
-		leaderboard.displayPlayer = false;
-		leaderboard.forcePlayerDisplay = false;
-		leaderboard.Open();
+    public void Openleaderboard()
+    {
+        leaderboard.displayPlayer = false;
+        leaderboard.forcePlayerDisplay = false;
+        leaderboard.Open();
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Audio;
 
 //This is a helper script that allow to assign an object in a bundle it's mixer output to the main mixer
@@ -22,12 +20,12 @@ public class AssignOutputChannel : MonoBehaviour
 
         AudioMixerGroup[] groups = MusicPlayer.instance.mixer.FindMatchingGroups(mixerGroup);
 
-        if(groups.Length == 0)
+        if (groups.Length == 0)
         {
             Debug.LogErrorFormat(gameObject, "Could not find any group called {0}", mixerGroup);
         }
 
-        for(int i = 0; i < groups.Length; ++i)
+        for (int i = 0; i < groups.Length; i++)
         {
             if (groups[i].name == mixerGroup)
             {

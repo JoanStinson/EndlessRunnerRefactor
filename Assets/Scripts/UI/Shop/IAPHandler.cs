@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 #if UNITY_PURCHASING
 using UnityEngine.Purchasing;
 #endif

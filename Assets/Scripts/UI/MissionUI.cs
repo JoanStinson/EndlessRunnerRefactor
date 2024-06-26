@@ -14,9 +14,11 @@ public class MissionUI : MonoBehaviour
         gameObject.SetActive(true);
 
         foreach (Transform t in missionPlace)
+        {
             Addressables.ReleaseInstance(t.gameObject);
+        }
 
-        for(int i = 0; i < 3; ++i)
+        for (int i = 0; i < 3; i++)
         {
             if (PlayerData.instance.missions.Count > i)
             {
@@ -56,7 +58,6 @@ public class MissionUI : MonoBehaviour
     public void Claim(MissionBase m)
     {
         PlayerData.instance.ClaimMission(m);
-
         // Rebuild the UI with the new missions
         StartCoroutine(Open());
     }

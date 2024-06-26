@@ -12,7 +12,7 @@ public class CoroutineHandler : MonoBehaviour
     {
         get
         {
-            if(m_Instance == null)
+            if (m_Instance == null)
             {
                 GameObject o = new GameObject("CoroutineHandler");
                 DontDestroyOnLoad(o);
@@ -25,11 +25,13 @@ public class CoroutineHandler : MonoBehaviour
 
     public void OnDisable()
     {
-        if(m_Instance)
+        if (m_Instance)
+        {
             Destroy(m_Instance.gameObject);
+        }
     }
 
-    static public Coroutine StartStaticCoroutine(IEnumerator coroutine)
+    public static Coroutine StartStaticCoroutine(IEnumerator coroutine)
     {
         return instance.StartCoroutine(coroutine);
     }

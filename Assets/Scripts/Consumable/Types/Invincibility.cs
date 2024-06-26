@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using System;
-using System.Collections;
+﻿using System.Collections;
 
 public class Invincibility : Consumable
 {
@@ -24,22 +22,21 @@ public class Invincibility : Consumable
 		return 5;
 	}
 
-	public override void Tick(CharacterInputController c)
+	public override void Tick(CharacterInputController characterInputController)
     {
-        base.Tick(c);
-
-        c.characterCollider.SetInvincibleExplicit(true);
+        base.Tick(characterInputController);
+        characterInputController.characterCollider.SetInvincibleExplicit(true);
     }
 
-    public override IEnumerator Started(CharacterInputController c)
+    public override IEnumerator Started(CharacterInputController characterInputController)
     {
-        yield return base.Started(c);
-        c.characterCollider.SetInvincible(duration);
+        yield return base.Started(characterInputController);
+        characterInputController.characterCollider.SetInvincible(duration);
     }
 
-    public override void Ended(CharacterInputController c)
+    public override void Ended(CharacterInputController characterInputController)
     {
-        base.Ended(c);
-        c.characterCollider.SetInvincibleExplicit(false);
+        base.Ended(characterInputController);
+        characterInputController.characterCollider.SetInvincibleExplicit(false);
     }
 }

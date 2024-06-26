@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 #if UNITY_ADS
 using UnityEngine.Advertisements;
 #endif
@@ -11,16 +10,16 @@ using UnityEngine.Analytics;
 public class AdsForMission : MonoBehaviour
 {
     public MissionUI missionUI;
-
     public Text newMissionText;
     public Button adsButton;
+    public string adsPlacementId = "rewardedVideo";
+    public bool adsRewarded = true;
+
 #if UNITY_ANALYTICS
     public AdvertisingNetwork adsNetwork = AdvertisingNetwork.UnityAds;
 #endif
-    public string adsPlacementId = "rewardedVideo";
-    public bool adsRewarded = true; 
 
-    void OnEnable ()
+    private void OnEnable()
     {
         adsButton.gameObject.SetActive(false);
         newMissionText.gameObject.SetActive(false);
@@ -105,7 +104,7 @@ public class AdsForMission : MonoBehaviour
     }
 #endif
 
-    void AddNewMission()
+    private void AddNewMission()
     {
         PlayerData.instance.AddMission();
         PlayerData.instance.Save();

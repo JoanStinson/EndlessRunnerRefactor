@@ -1,27 +1,26 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.AddressableAssets;
-
+﻿using UnityEngine;
 #if UNITY_ANALYTICS
 using UnityEngine.Analytics;
 #endif
 
 public class ShopItemList : ShopList
 {
-	static public Consumable.ConsumableType[] s_ConsumablesTypes = System.Enum.GetValues(typeof(Consumable.ConsumableType)) as Consumable.ConsumableType[];
+    public static Consumable.ConsumableType[] s_ConsumablesTypes = System.Enum.GetValues(typeof(Consumable.ConsumableType)) as Consumable.ConsumableType[];
 
-	public override void Populate()
+    public override void Populate()
     {
-		m_RefreshCallback = null;
+        m_RefreshCallback = null;
+
         foreach (Transform t in listRoot)
         {
             Destroy(t.gameObject);
         }
 
-        for(int i = 0; i < s_ConsumablesTypes.Length; ++i)
+        for (int i = 0; i < s_ConsumablesTypes.Length; i++)
         {
             Consumable c = ConsumableDatabase.GetConsumbale(s_ConsumablesTypes[i]);
-            if(c != null)
+
+            if (c != null)
             {
                 prefabItem.InstantiateAsync().Completed += (op) =>
                 {
@@ -30,13 +29,11 @@ public class ShopItemList : ShopList
                         Debug.LogWarning(string.Format("Unable to load item shop list {0}.", prefabItem.RuntimeKey));
                         return;
                     }
+
                     GameObject newEntry = op.Result;
                     newEntry.transform.SetParent(listRoot, false);
-
                     ShopItemListItem itm = newEntry.GetComponent<ShopItemListItem>();
-
                     itm.buyButton.image.sprite = itm.buyButtonSprite;
-
                     itm.nameText.text = c.GetConsumableName();
                     itm.pricetext.text = c.GetPrice().ToString();
 
@@ -51,49 +48,47 @@ public class ShopItemList : ShopList
                     }
 
                     itm.icon.sprite = c.icon;
-
                     itm.countText.gameObject.SetActive(true);
-
-                    itm.buyButton.onClick.AddListener(delegate() { Buy(c); });
-                    m_RefreshCallback += delegate() { RefreshButton(itm, c); };
+                    itm.buyButton.onClick.AddListener(delegate () { Buy(c); });
+                    m_RefreshCallback += delegate () { RefreshButton(itm, c); };
                     RefreshButton(itm, c);
                 };
             }
         }
     }
 
-	protected void RefreshButton(ShopItemListItem itemList, Consumable c)
-	{
-		int count = 0;
-		PlayerData.instance.consumables.TryGetValue(c.GetConsumableType(), out count);
-		itemList.countText.text = count.ToString();
+    protected void RefreshButton(ShopItemListItem itemList, Consumable c)
+    {
+        int count = 0;
+        PlayerData.instance.consumables.TryGetValue(c.GetConsumableType(), out count);
+        itemList.countText.text = count.ToString();
 
-		if (c.GetPrice() > PlayerData.instance.coins)
-		{
-			itemList.buyButton.interactable = false;
-			itemList.pricetext.color = Color.red;
-		}
-		else
-		{
-			itemList.pricetext.color = Color.black;
-		}
+        if (c.GetPrice() > PlayerData.instance.coins)
+        {
+            itemList.buyButton.interactable = false;
+            itemList.pricetext.color = Color.red;
+        }
+        else
+        {
+            itemList.pricetext.color = Color.black;
+        }
 
-		if (c.GetPremiumCost() > PlayerData.instance.premium)
-		{
-			itemList.buyButton.interactable = false;
-			itemList.premiumText.color = Color.red;
-		}
-		else
-		{
-			itemList.premiumText.color = Color.black;
-		}
-	}
+        if (c.GetPremiumCost() > PlayerData.instance.premium)
+        {
+            itemList.buyButton.interactable = false;
+            itemList.premiumText.color = Color.red;
+        }
+        else
+        {
+            itemList.premiumText.color = Color.black;
+        }
+    }
 
     public void Buy(Consumable c)
     {
         PlayerData.instance.coins -= c.GetPrice();
-		PlayerData.instance.premium -= c.GetPremiumCost();
-		PlayerData.instance.Add(c.GetConsumableType());
+        PlayerData.instance.premium -= c.GetPremiumCost();
+        PlayerData.instance.Add(c.GetConsumableType());
         PlayerData.instance.Save();
 
 #if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
