@@ -30,7 +30,7 @@ Unity's endless runner game sample "Trash Dash" refactored.
 ✅ Cleaned code<br>
 ✅ Reduced draw calls by 40%<br>
 ✅ Reduced build size by 48%<br>
-✅ Substituted GetComponent<> calls for TryGetComponent<><br>
+✅ Removed GetComponent calls<br>
 ✅ Split classes into separate files<br>
 ✅ Substituted singletons for a service locator<br>
 ✅ Made gameplay and UI scalable for multiple resolutions<br>
