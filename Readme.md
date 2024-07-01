@@ -32,8 +32,8 @@ Unity's endless runner game sample "Trash Dash" refactored.
 ✅ Reduced build size by 48%<br>
 ✅ Removed GetComponent calls<br>
 ✅ Split classes into separate files<br>
-✅ Substituted singletons for a service locator<br>
-✅ Made gameplay and UI scalable for multiple resolutions<br>
+✅ Substituted Singletons for a Service Locator<br>
+✅ Made game scalable for multiple resolutions<br>
 
 ## 📚 Bibliography
 * [Clean Architecture: A Craftsman's Guide to Software Structure and Design](https://www.amazon.es/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164/ref=sr_1_1?__mk_es_ES=ÅMÅŽÕÑ&crid=3R5ANE5N20NHP&keywords=Clean+Arquitecture%3A+A+Craftsman%27s+Guide+to+Software+Structure+and+Design&qid=1669111929&qu=eyJxc2MiOiIwLjA0IiwicXNhIjoiMC4wMCIsInFzcCI6IjAuMDAifQ%3D%3D&sprefix=clean+arquitecture+a+craftsman%27s+guide+to+software+structure+and+design%2Caps%2C74&sr=8-1)
