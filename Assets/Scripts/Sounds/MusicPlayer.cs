@@ -20,7 +20,7 @@ public class MusicPlayer : MonoBehaviour, IMusicPlayer
     private void Awake()
     {
         // As this is one of the first script executed, set that here.
-        Application.targetFrameRate = 30;
+        Application.targetFrameRate = 60;
         AudioListener.pause = false;
         DontDestroyOnLoad(gameObject);
         ServiceLocator.Instance.AddService<IMusicPlayer>(this);
