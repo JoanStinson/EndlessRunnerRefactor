@@ -66,10 +66,12 @@ public class LoadoutState : AState
     protected int k_UILayer;
 
     private Consumable.ConsumableType m_PowerupToUse = Consumable.ConsumableType.NONE;
+    private IPlayerData m_playerData;
 
     public override void Enter(AState from)
     {
-        tutorialBlocker.SetActive(!PlayerData.instance.tutorialDone);
+        m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        tutorialBlocker.SetActive(!m_playerData.TutorialDone);
         tutorialPrompt.SetActive(false);
         inventoryCanvas.gameObject.SetActive(true);
         missionPopup.gameObject.SetActive(false);
@@ -82,10 +84,11 @@ public class LoadoutState : AState
         // Reseting the global blinking value. Can happen if the game unexpectedly exited while still blinking
         Shader.SetGlobalFloat("_BlinkingValue", 0.0f);
 
-        if (MusicPlayer.instance.GetStem(0) != menuTheme)
+        var musicPlayer = ServiceLocator.Instance.GetService<IMusicPlayer>();
+        if (musicPlayer.GetStem(0) != menuTheme)
         {
-            MusicPlayer.instance.SetStem(0, menuTheme);
-            StartCoroutine(MusicPlayer.instance.RestartAllStems());
+            musicPlayer.SetStem(0, menuTheme);
+            StartCoroutine(musicPlayer.RestartAllStems());
         }
 
         runButton.interactable = false;
@@ -94,7 +97,7 @@ public class LoadoutState : AState
         if (m_PowerupToUse != Consumable.ConsumableType.NONE)
         {
             //if we come back from a run and we don't have any more of the powerup we wanted to use, we reset the powerup to use to NONE
-            if (!PlayerData.instance.consumables.ContainsKey(m_PowerupToUse) || PlayerData.instance.consumables[m_PowerupToUse] == 0)
+            if (!m_playerData.Consumables.ContainsKey(m_PowerupToUse) || m_playerData.Consumables[m_PowerupToUse] == 0)
             {
                 m_PowerupToUse = Consumable.ConsumableType.NONE;
             }
@@ -126,7 +129,7 @@ public class LoadoutState : AState
 
             if (m_PowerupToUse != Consumable.ConsumableType.NONE)
             {
-                PlayerData.instance.Consume(m_PowerupToUse);
+                m_playerData.Consume(m_PowerupToUse);
                 Consumable inv = Instantiate(ConsumableDatabase.GetConsumbale(m_PowerupToUse));
                 inv.gameObject.SetActive(false);
                 gs.trackManager.characterController.inventory = inv;
@@ -166,8 +169,8 @@ public class LoadoutState : AState
             m_Character.transform.Rotate(0, k_CharacterRotationSpeed * Time.deltaTime, 0, Space.Self);
         }
 
-        charSelect.gameObject.SetActive(PlayerData.instance.characters.Count > 1);
-        themeSelect.gameObject.SetActive(PlayerData.instance.themes.Count > 1);
+        charSelect.gameObject.SetActive(m_playerData.Characters.Count > 1);
+        themeSelect.gameObject.SetActive(m_playerData.Themes.Count > 1);
     }
 
     public void GoToStore()
@@ -177,14 +180,14 @@ public class LoadoutState : AState
 
     public void ChangeCharacter(int dir)
     {
-        PlayerData.instance.usedCharacter += dir;
-        if (PlayerData.instance.usedCharacter >= PlayerData.instance.characters.Count)
+        m_playerData.UsedCharacter += dir;
+        if (m_playerData.UsedCharacter >= m_playerData.Characters.Count)
         {
-            PlayerData.instance.usedCharacter = 0;
+            m_playerData.UsedCharacter = 0;
         }
-        else if (PlayerData.instance.usedCharacter < 0)
+        else if (m_playerData.UsedCharacter < 0)
         {
-            PlayerData.instance.usedCharacter = PlayerData.instance.characters.Count - 1;
+            m_playerData.UsedCharacter = m_playerData.Characters.Count - 1;
         }
 
         StartCoroutine(PopulateCharacters());
@@ -204,11 +207,11 @@ public class LoadoutState : AState
 
         if (m_UsedAccessory != -1)
         {
-            PlayerData.instance.usedAccessory = m_OwnedAccesories[m_UsedAccessory];
+            m_playerData.UsedAccessory = m_OwnedAccesories[m_UsedAccessory];
         }
         else
         {
-            PlayerData.instance.usedAccessory = -1;
+            m_playerData.UsedAccessory = -1;
         }
 
         SetupAccessory();
@@ -216,14 +219,14 @@ public class LoadoutState : AState
 
     public void ChangeTheme(int dir)
     {
-        PlayerData.instance.usedTheme += dir;
-        if (PlayerData.instance.usedTheme >= PlayerData.instance.themes.Count)
+        m_playerData.UsedTheme += dir;
+        if (m_playerData.UsedTheme >= m_playerData.Themes.Count)
         {
-            PlayerData.instance.usedTheme = 0;
+            m_playerData.UsedTheme = 0;
         }
-        else if (PlayerData.instance.usedTheme < 0)
+        else if (m_playerData.UsedTheme < 0)
         {
-            PlayerData.instance.usedTheme = PlayerData.instance.themes.Count - 1;
+            m_playerData.UsedTheme = m_playerData.Themes.Count - 1;
         }
 
         StartCoroutine(PopulateTheme());
@@ -235,7 +238,7 @@ public class LoadoutState : AState
 
         while (t == null)
         {
-            t = ThemeDatabase.GetThemeData(PlayerData.instance.themes[PlayerData.instance.usedTheme]);
+            t = ThemeDatabase.GetThemeData(m_playerData.Themes[m_playerData.UsedTheme]);
             yield return null;
         }
 
@@ -248,7 +251,7 @@ public class LoadoutState : AState
     public IEnumerator PopulateCharacters()
     {
         accessoriesSelector.gameObject.SetActive(false);
-        PlayerData.instance.usedAccessory = -1;
+        m_playerData.UsedAccessory = -1;
         m_UsedAccessory = -1;
 
         if (!m_IsLoadingCharacter)
@@ -258,7 +261,7 @@ public class LoadoutState : AState
 
             while (newChar == null)
             {
-                Character c = CharacterDatabase.GetCharacter(PlayerData.instance.characters[PlayerData.instance.usedCharacter]);
+                Character c = CharacterDatabase.GetCharacter(m_playerData.Characters[m_playerData.UsedCharacter]);
 
                 if (c != null)
                 {
@@ -267,7 +270,7 @@ public class LoadoutState : AState
                     {
                         // Check which accessories we own.
                         string compoundName = c.characterName + ":" + c.accessories[i].accessoryName;
-                        if (PlayerData.instance.characterAccessories.Contains(compoundName))
+                        if (m_playerData.CharacterAccessories.Contains(compoundName))
                         {
                             m_OwnedAccesories.Add(i);
                         }
@@ -327,10 +330,10 @@ public class LoadoutState : AState
     {
         if (m_Character.TryGetComponent<Character>(out var character))
         {
-            character.SetupAccesory(PlayerData.instance.usedAccessory);
+            character.SetupAccesory(m_playerData.UsedAccessory);
         }
 
-        if (PlayerData.instance.usedAccessory == -1)
+        if (m_playerData.UsedAccessory == -1)
         {
             accesoryNameDisplay.text = "None";
             accessoryIconDisplay.enabled = false;
@@ -338,8 +341,8 @@ public class LoadoutState : AState
         else
         {
             accessoryIconDisplay.enabled = true;
-            accesoryNameDisplay.text = character.accessories[PlayerData.instance.usedAccessory].accessoryName;
-            accessoryIconDisplay.sprite = character.accessories[PlayerData.instance.usedAccessory].accessoryIcon;
+            accesoryNameDisplay.text = character.accessories[m_playerData.UsedAccessory].accessoryName;
+            accessoryIconDisplay.sprite = character.accessories[m_playerData.UsedAccessory].accessoryIcon;
         }
     }
 
@@ -347,7 +350,7 @@ public class LoadoutState : AState
     {
         powerupIcon.gameObject.SetActive(true);
 
-        if (PlayerData.instance.consumables.Count > 0)
+        if (m_playerData.Consumables.Count > 0)
         {
             Consumable c = ConsumableDatabase.GetConsumbale(m_PowerupToUse);
 
@@ -355,7 +358,7 @@ public class LoadoutState : AState
             if (c != null)
             {
                 powerupIcon.sprite = c.icon;
-                powerupCount.text = PlayerData.instance.consumables[m_PowerupToUse].ToString();
+                powerupCount.text = m_playerData.Consumables[m_PowerupToUse].ToString();
             }
             else
             {
@@ -385,7 +388,7 @@ public class LoadoutState : AState
             }
 
             int count = 0;
-            if (PlayerData.instance.consumables.TryGetValue((Consumable.ConsumableType)m_UsedPowerupIndex, out count) && count > 0)
+            if (m_playerData.Consumables.TryGetValue((Consumable.ConsumableType)m_UsedPowerupIndex, out count) && count > 0)
             {
                 found = true;
             }
@@ -408,12 +411,12 @@ public class LoadoutState : AState
 
     public void StartGame()
     {
-        if (PlayerData.instance.tutorialDone)
+        if (m_playerData.TutorialDone)
         {
-            if (PlayerData.instance.ftueLevel == 1)
+            if (m_playerData.FtueLevel == 1)
             {
-                PlayerData.instance.ftueLevel = 2;
-                PlayerData.instance.Save();
+                m_playerData.FtueLevel = 2;
+                m_playerData.Save();
             }
         }
 

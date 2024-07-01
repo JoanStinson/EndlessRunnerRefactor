@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Audio;
 
-public class MusicPlayer : MonoBehaviour
+public class MusicPlayer : MonoBehaviour, IMusicPlayer
 {
     [System.Serializable]
     public class Stem
@@ -11,46 +12,38 @@ public class MusicPlayer : MonoBehaviour
         public float startingSpeedRatio;    // The stem will start when this is lower than currentSpeed/maxSpeed.
     }
 
-    public static MusicPlayer instance { get { return s_Instance; } }
-    public UnityEngine.Audio.AudioMixer mixer;
+    public AudioMixer Mixer => mixer;
+    public AudioMixer mixer;
     public Stem[] stems;
     public float maxVolume = 0.1f;
 
-    protected static MusicPlayer s_Instance;
-
     private void Awake()
     {
-        if (s_Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        s_Instance = this;
-
         // As this is one of the first script executed, set that here.
         Application.targetFrameRate = 30;
         AudioListener.pause = false;
         DontDestroyOnLoad(gameObject);
+        ServiceLocator.Instance.AddService<IMusicPlayer>(this);
+        ServiceLocator.Instance.AddService<IPlayerData>(new PlayerData());
     }
 
     private void Start()
     {
-        PlayerData.Create();
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.Create();
 
-        if (PlayerData.instance.masterVolume > float.MinValue)
+        if (playerData.MasterVolume > float.MinValue)
         {
-            mixer.SetFloat("MasterVolume", PlayerData.instance.masterVolume);
-            mixer.SetFloat("MusicVolume", PlayerData.instance.musicVolume);
-            mixer.SetFloat("MasterSFXVolume", PlayerData.instance.masterSFXVolume);
+            mixer.SetFloat("MasterVolume", playerData.MasterVolume);
+            mixer.SetFloat("MusicVolume", playerData.MusicVolume);
+            mixer.SetFloat("MasterSFXVolume", playerData.MasterSFXVolume);
         }
         else
         {
-            mixer.GetFloat("MasterVolume", out PlayerData.instance.masterVolume);
-            mixer.GetFloat("MusicVolume", out PlayerData.instance.musicVolume);
-            mixer.GetFloat("MasterSFXVolume", out PlayerData.instance.masterSFXVolume);
-
-            PlayerData.instance.Save();
+            mixer.GetFloat("MasterVolume", out float MasterVolume);
+            mixer.GetFloat("MusicVolume", out float MusicVolume);
+            mixer.GetFloat("MasterSFXVolume", out float MasterSFXVolume);
+            playerData.Save();
         }
 
         StartCoroutine(RestartAllStems());
@@ -74,7 +67,7 @@ public class MusicPlayer : MonoBehaviour
 
     public IEnumerator RestartAllStems()
     {
-        for (int i = 0; i < stems.Length; ++i)
+        for (int i = 0; i < stems.Length; i++)
         {
             stems[i].source.clip = stems[i].clip;
             stems[i].source.volume = 0.0f;
@@ -85,7 +78,7 @@ public class MusicPlayer : MonoBehaviour
         // So we play all source at volume 0.0f first, then wait 50 ms before finally setting the actual volume.
         yield return new WaitForSeconds(0.05f);
 
-        for (int i = 0; i < stems.Length; ++i)
+        for (int i = 0; i < stems.Length; i++)
         {
             stems[i].source.volume = stems[i].startingSpeedRatio <= 0.0f ? maxVolume : 0.0f;
         }

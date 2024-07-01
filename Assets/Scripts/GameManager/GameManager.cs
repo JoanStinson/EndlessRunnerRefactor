@@ -7,21 +7,19 @@ using UnityEngine.Analytics;
 /// <summary>
 /// The Game manager is a state machine, that will switch between state according to current gamestate.
 /// </summary>
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviour, IGameManager
 {
-    public static GameManager instance { get { return s_Instance; } }
     public AState topState { get { if (m_StateStack.Count == 0) return null; return m_StateStack[m_StateStack.Count - 1]; } }
     public ConsumableDatabase m_ConsumableDatabase;
     public AState[] states;
 
-    protected static GameManager s_Instance;
     protected List<AState> m_StateStack = new List<AState>();
     protected Dictionary<string, AState> m_StateDict = new Dictionary<string, AState>();
 
     protected void OnEnable()
     {
-        PlayerData.Create();
-        s_Instance = this;
+        ServiceLocator.Instance.GetService<IPlayerData>().Create();
+        ServiceLocator.Instance.AddService<IGameManager>(this);
         m_ConsumableDatabase.Load();
 
         // We build a dictionnary from state for easy switching using their name.
@@ -128,15 +126,4 @@ public class GameManager : MonoBehaviour
 
         m_StateStack.Add(state);
     }
-}
-
-public abstract class AState : MonoBehaviour
-{
-    [HideInInspector]
-    public GameManager manager;
-
-    public abstract void Enter(AState from);
-    public abstract void Exit(AState to);
-    public abstract void Tick();
-    public abstract string GetName();
 }

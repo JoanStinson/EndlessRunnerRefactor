@@ -14,6 +14,7 @@ public class AdsForMission : MonoBehaviour
     public Button adsButton;
     public string adsPlacementId = "rewardedVideo";
     public bool adsRewarded = true;
+    private IPlayerData m_playerData;
 
 #if UNITY_ANALYTICS
     public AdvertisingNetwork adsNetwork = AdvertisingNetwork.UnityAds;
@@ -25,7 +26,8 @@ public class AdsForMission : MonoBehaviour
         newMissionText.gameObject.SetActive(false);
 
         // Only present an ad offer if less than 3 missions.
-        if (PlayerData.instance.missions.Count >= 3)
+        m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        if (m_playerData.Missions.Count >= 3)
         {
             return;
         }
@@ -106,8 +108,8 @@ public class AdsForMission : MonoBehaviour
 
     private void AddNewMission()
     {
-        PlayerData.instance.AddMission();
-        PlayerData.instance.Save();
+        m_playerData.AddMission();
+        m_playerData.Save();
         StartCoroutine(missionUI.Open());
     }
 }

@@ -19,9 +19,10 @@ public class MissionUI : MonoBehaviour
             Addressables.ReleaseInstance(t.gameObject);
         }
 
+        var missions = ServiceLocator.Instance.GetService<IPlayerData>().Missions;
         for (int i = 0; i < 3; i++)
         {
-            if (PlayerData.instance.missions.Count > i)
+            if (missions.Count > i)
             {
                 AsyncOperationHandle op = missionEntryPrefab.InstantiateAsync();
                 yield return op;
@@ -34,7 +35,7 @@ public class MissionUI : MonoBehaviour
                 if ((op.Result as GameObject).TryGetComponent<MissionEntry>(out var entry))
                 {
                     entry.transform.SetParent(missionPlace, false);
-                    entry.FillWithMission(PlayerData.instance.missions[i], this);
+                    entry.FillWithMission(missions[i], this);
                 }
             }
             else
@@ -64,7 +65,7 @@ public class MissionUI : MonoBehaviour
 
     public void Claim(MissionBase m)
     {
-        PlayerData.instance.ClaimMission(m);
+        ServiceLocator.Instance.GetService<IPlayerData>().ClaimMission(m);
         // Rebuild the UI with the new missions
         StartCoroutine(Open());
     }

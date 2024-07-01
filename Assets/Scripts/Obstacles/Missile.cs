@@ -87,7 +87,7 @@ public class Missile : Obstacle
             }
             else
             {
-                if (TrackManager.instance.segments[1] == m_OwnSegement)
+                if (ServiceLocator.Instance.GetService<ITrackManager>().segments[1] == m_OwnSegement)
                 {
                     if (animator != null)
                     {

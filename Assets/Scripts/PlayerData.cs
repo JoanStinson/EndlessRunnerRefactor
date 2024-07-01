@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
+
 #if UNITY_ANALYTICS
 using UnityEngine.Analytics;
 #endif
@@ -8,48 +10,39 @@ using UnityEngine.Analytics;
 using UnityEditor;
 #endif
 
-public struct HighscoreEntry : System.IComparable<HighscoreEntry>
-{
-    public string name;
-    public int score;
-
-    public int CompareTo(HighscoreEntry other)
-    {
-        // We want to sort from highest to lowest, so inverse the comparison.
-        return other.score.CompareTo(score);
-    }
-}
-
 /// <summary>
 /// Save data for the game. This is stored locally in this case, but a "better" way to do it would be to store it on a server
 /// somewhere to avoid player tampering with it. Here potentially a player could modify the binary file to add premium currency.
 /// </summary>
-public class PlayerData
+public class PlayerData : IPlayerData
 {
-    public static PlayerData instance { get { return m_Instance; } }
+    public int UsedAccessory { get; set; } = -1;
+    public string PreviousName { get; set; } = "Trash Cat";
+    public int Premium { get; set; }
+    public int Coins { get; set; }
+    public bool TutorialDone { get; set; }
+    public Dictionary<Consumable.ConsumableType, int> Consumables { get; set; } = new Dictionary<Consumable.ConsumableType, int>();
+    public List<string> Characters { get; set; } = new List<string>();
+    public List<string> Themes { get; set; } = new List<string>();
+    public int UsedCharacter { get; set; }
+    public int UsedTheme { get; set; }
+    public float MasterVolume { get; set; } = float.MinValue;
+    public float MusicVolume { get; set; } = float.MinValue;
+    public float MasterSFXVolume { get; set; } = float.MinValue;
+    public List<MissionBase> Missions { get; set; } = new List<MissionBase>();
 
-    public int coins;
-    public int premium;
-    public Dictionary<Consumable.ConsumableType, int> consumables = new Dictionary<Consumable.ConsumableType, int>();   // Inventory of owned consumables and quantity.
-    public List<string> characters = new List<string>();    // Inventory of characters owned.
-    public int usedCharacter;                               // Currently equipped character.
-    public int usedAccessory = -1;
-    public List<string> characterAccessories = new List<string>();  // List of owned accessories, in the form "charName:accessoryName".
-    public List<string> themes = new List<string>();                // Owned themes.
-    public int usedTheme;                                           // Currently used theme.
-    public List<HighscoreEntry> highscores = new List<HighscoreEntry>();
-    public List<MissionBase> missions = new List<MissionBase>();
-    public string previousName = "Trash Cat";
-    public bool licenceAccepted;
-    public bool tutorialDone;
-    public float masterVolume = float.MinValue, musicVolume = float.MinValue, masterSFXVolume = float.MinValue;
+    // List of owned accessories, in the form "charName:accessoryName".
+    public List<string> CharacterAccessories { get; set; } = new List<string>();
+    
     //ftue = First Time User Expeerience. This var is used to track thing a player do for the first time. It increment everytime the user do one of the step
     //e.g. it will increment to 1 when they click Start, to 2 when doing the first run, 3 when running at least 300m etc.
-    public int ftueLevel = 0;
-    //Player win a rank ever 300m (e.g. a player having reached 1200m at least once will be rank 4)
-    public int rank = 0;
+    public int FtueLevel { get; set; } = 0;
 
-    protected static PlayerData m_Instance;
+    //Player win a rank ever 300m (e.g. a player having reached 1200m at least once will be rank 4)
+    public int Rank { get; set; } = 0;
+    public bool LicenceAccepted { get; set; }
+    public List<HighscoreEntry> Highscores { get; set; } = new List<HighscoreEntry>();
+
     protected string saveFile = "";
 
     // This will allow us to add data even after production, and so keep all existing save STILL valid. See loading & saving for how it work.
@@ -57,18 +50,45 @@ public class PlayerData
     // Then would increment again with every subsequent patches. We kept it to its dev value here for teaching purpose. 
     private static int s_Version = 12;
 
+    public void Create()
+    {
+        if (saveFile == "")
+        {
+            //if we create the PlayerData, mean it's the very first call, so we use that to init the database
+            //this allow to always init the database at the earlier we can, i.e. the start screen if started normally on device
+            //or the Loadout screen if testing in editor
+            CoroutineHandler.StartStaticCoroutine(CharacterDatabase.LoadDatabase());
+            CoroutineHandler.StartStaticCoroutine(ThemeDatabase.LoadDatabase());
+        }
+
+        saveFile = Application.persistentDataPath + "/save.bin";
+
+        if (File.Exists(saveFile))
+        {
+            // If we have a save, we read it.
+            Read();
+        }
+        else
+        {
+            // If not we create one with default data.
+            NewSave();
+        }
+
+        CheckMissionsCount();
+    }
+
     public void Consume(Consumable.ConsumableType type)
     {
-        if (!consumables.ContainsKey(type))
+        if (!Consumables.ContainsKey(type))
         {
             return;
         }
 
-        consumables[type] -= 1;
+        Consumables[type] -= 1;
 
-        if (consumables[type] == 0)
+        if (Consumables[type] == 0)
         {
-            consumables.Remove(type);
+            Consumables.Remove(type);
         }
 
         Save();
@@ -76,35 +96,35 @@ public class PlayerData
 
     public void Add(Consumable.ConsumableType type)
     {
-        if (!consumables.ContainsKey(type))
+        if (!Consumables.ContainsKey(type))
         {
-            consumables[type] = 0;
+            Consumables[type] = 0;
         }
 
-        consumables[type] += 1;
+        Consumables[type] += 1;
         Save();
     }
 
     public void AddCharacter(string name)
     {
-        characters.Add(name);
+        Characters.Add(name);
     }
 
     public void AddTheme(string theme)
     {
-        themes.Add(theme);
+        Themes.Add(theme);
     }
 
     public void AddAccessory(string name)
     {
-        characterAccessories.Add(name);
+        CharacterAccessories.Add(name);
     }
 
     // Mission management
     // Will add missions until we reach 2 missions.
     public void CheckMissionsCount()
     {
-        while (missions.Count < 2)
+        while (Missions.Count < 2)
         {
             AddMission();
         }
@@ -115,30 +135,30 @@ public class PlayerData
         int val = Random.Range(0, (int)MissionBase.MissionType.MAX);
         MissionBase newMission = MissionBase.GetNewMissionFromType((MissionBase.MissionType)val);
         newMission.Created();
-        missions.Add(newMission);
+        Missions.Add(newMission);
     }
 
     public void StartRunMissions(TrackManager manager)
     {
-        for (int i = 0; i < missions.Count; i++)
+        for (int i = 0; i < Missions.Count; i++)
         {
-            missions[i].RunStart(manager);
+            Missions[i].RunStart(manager);
         }
     }
 
     public void UpdateMissions(TrackManager manager)
     {
-        for (int i = 0; i < missions.Count; i++)
+        for (int i = 0; i < Missions.Count; i++)
         {
-            missions[i].Update(manager);
+            Missions[i].Update(manager);
         }
     }
 
     public bool AnyMissionComplete()
     {
-        for (int i = 0; i < missions.Count; i++)
+        for (int i = 0; i < Missions.Count; i++)
         {
-            if (missions[i].isComplete)
+            if (Missions[i].isComplete)
             {
                 return true;
             }
@@ -149,7 +169,7 @@ public class PlayerData
 
     public void ClaimMission(MissionBase mission)
     {
-        premium += mission.reward;
+        Premium += mission.reward;
 
 #if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
         AnalyticsEvent.ItemAcquired(
@@ -163,7 +183,7 @@ public class PlayerData
         );
 #endif
 
-        missions.Remove(mission);
+        Missions.Remove(mission);
         CheckMissionsCount();
         Save();
     }
@@ -174,7 +194,7 @@ public class PlayerData
         HighscoreEntry entry = new HighscoreEntry();
         entry.score = score;
         entry.name = "";
-        int index = highscores.BinarySearch(entry);
+        int index = Highscores.BinarySearch(entry);
         return index < 0 ? (~index) : index;
     }
 
@@ -183,63 +203,33 @@ public class PlayerData
         HighscoreEntry entry = new HighscoreEntry();
         entry.score = score;
         entry.name = name;
-        highscores.Insert(GetScorePlace(score), entry);
+        Highscores.Insert(GetScorePlace(score), entry);
 
         // Keep only the 10 best scores.
-        while (highscores.Count > 10)
+        while (Highscores.Count > 10)
         {
-            highscores.RemoveAt(highscores.Count - 1);
+            Highscores.RemoveAt(Highscores.Count - 1);
         }
     }
 
-    // File management
-    public static void Create()
+    public void NewSave()
     {
-        if (m_Instance == null)
-        {
-            m_Instance = new PlayerData();
-
-            //if we create the PlayerData, mean it's the very first call, so we use that to init the database
-            //this allow to always init the database at the earlier we can, i.e. the start screen if started normally on device
-            //or the Loadout screen if testing in editor
-            CoroutineHandler.StartStaticCoroutine(CharacterDatabase.LoadDatabase());
-            CoroutineHandler.StartStaticCoroutine(ThemeDatabase.LoadDatabase());
-        }
-
-        m_Instance.saveFile = Application.persistentDataPath + "/save.bin";
-
-        if (File.Exists(m_Instance.saveFile))
-        {
-            // If we have a save, we read it.
-            m_Instance.Read();
-        }
-        else
-        {
-            // If not we create one with default data.
-            NewSave();
-        }
-
-        m_Instance.CheckMissionsCount();
-    }
-
-    public static void NewSave()
-    {
-        m_Instance.characters.Clear();
-        m_Instance.themes.Clear();
-        m_Instance.missions.Clear();
-        m_Instance.characterAccessories.Clear();
-        m_Instance.consumables.Clear();
-        m_Instance.usedCharacter = 0;
-        m_Instance.usedTheme = 0;
-        m_Instance.usedAccessory = -1;
-        m_Instance.coins = 0;
-        m_Instance.premium = 0;
-        m_Instance.characters.Add("Trash Cat");
-        m_Instance.themes.Add("Day");
-        m_Instance.ftueLevel = 0;
-        m_Instance.rank = 0;
-        m_Instance.CheckMissionsCount();
-        m_Instance.Save();
+        Characters.Clear();
+        Themes.Clear();
+        Missions.Clear();
+        CharacterAccessories.Clear();
+        Consumables.Clear();
+        UsedCharacter = 0;
+        UsedTheme = 0;
+        UsedAccessory = -1;
+        Coins = 0;
+        Premium = 0;
+        Characters.Add("Trash Cat");
+        Themes.Add("Day");
+        FtueLevel = 0;
+        Rank = 0;
+        CheckMissionsCount();
+        Save();
     }
 
     public void Read()
@@ -256,17 +246,17 @@ public class PlayerData
             ver = r.ReadInt32();
         }
 
-        coins = r.ReadInt32();
-        consumables.Clear();
+        Coins = r.ReadInt32();
+        Consumables.Clear();
         int consumableCount = r.ReadInt32();
 
         for (int i = 0; i < consumableCount; i++)
         {
-            consumables.Add((Consumable.ConsumableType)r.ReadInt32(), r.ReadInt32());
+            Consumables.Add((Consumable.ConsumableType)r.ReadInt32(), r.ReadInt32());
         }
 
         // Read character.
-        characters.Clear();
+        Characters.Clear();
         int charCount = r.ReadInt32();
         for (int i = 0; i < charCount; i++)
         {
@@ -277,54 +267,53 @@ public class PlayerData
                 charName = charName.Replace("Racoon", "Raccoon");
             }
 
-            characters.Add(charName);
+            Characters.Add(charName);
         }
 
-        usedCharacter = r.ReadInt32();
+        UsedCharacter = r.ReadInt32();
 
         // Read character accesories.
-        characterAccessories.Clear();
+        CharacterAccessories.Clear();
         int accCount = r.ReadInt32();
         for (int i = 0; i < accCount; i++)
         {
-            characterAccessories.Add(r.ReadString());
+            CharacterAccessories.Add(r.ReadString());
         }
 
         // Read Themes.
-        themes.Clear();
+        Themes.Clear();
         int themeCount = r.ReadInt32();
         for (int i = 0; i < themeCount; i++)
         {
-            themes.Add(r.ReadString());
+            Themes.Add(r.ReadString());
         }
 
-        usedTheme = r.ReadInt32();
+        UsedTheme = r.ReadInt32();
 
         // Save contains the version they were written with. If data are added bump the version & test for that version before loading that data.
         if (ver >= 2)
         {
-            premium = r.ReadInt32();
+            Premium = r.ReadInt32();
         }
 
         // Added highscores.
         if (ver >= 3)
         {
-            highscores.Clear();
+            Highscores.Clear();
             int count = r.ReadInt32();
             for (int i = 0; i < count; i++)
             {
                 HighscoreEntry entry = new HighscoreEntry();
                 entry.name = r.ReadString();
                 entry.score = r.ReadInt32();
-
-                highscores.Add(entry);
+                Highscores.Add(entry);
             }
         }
 
         // Added missions.
         if (ver >= 4)
         {
-            missions.Clear();
+            Missions.Clear();
 
             int count = r.ReadInt32();
             for (int i = 0; i < count; i++)
@@ -335,7 +324,7 @@ public class PlayerData
 
                 if (tempMission != null)
                 {
-                    missions.Add(tempMission);
+                    Missions.Add(tempMission);
                 }
             }
         }
@@ -343,30 +332,30 @@ public class PlayerData
         // Added highscore previous name used.
         if (ver >= 7)
         {
-            previousName = r.ReadString();
+            PreviousName = r.ReadString();
         }
 
         if (ver >= 8)
         {
-            licenceAccepted = r.ReadBoolean();
+            LicenceAccepted = r.ReadBoolean();
         }
 
         if (ver >= 9)
         {
-            masterVolume = r.ReadSingle();
-            musicVolume = r.ReadSingle();
-            masterSFXVolume = r.ReadSingle();
+            MasterVolume = r.ReadSingle();
+            MusicVolume = r.ReadSingle();
+            MasterSFXVolume = r.ReadSingle();
         }
 
         if (ver >= 10)
         {
-            ftueLevel = r.ReadInt32();
-            rank = r.ReadInt32();
+            FtueLevel = r.ReadInt32();
+            Rank = r.ReadInt32();
         }
 
         if (ver >= 12)
         {
-            tutorialDone = r.ReadBoolean();
+            TutorialDone = r.ReadBoolean();
         }
 
         r.Close();
@@ -377,65 +366,65 @@ public class PlayerData
         BinaryWriter w = new BinaryWriter(new FileStream(saveFile, FileMode.OpenOrCreate));
 
         w.Write(s_Version);
-        w.Write(coins);
+        w.Write(Coins);
 
-        w.Write(consumables.Count);
-        foreach (KeyValuePair<Consumable.ConsumableType, int> p in consumables)
+        w.Write(Consumables.Count);
+        foreach (KeyValuePair<Consumable.ConsumableType, int> p in Consumables)
         {
             w.Write((int)p.Key);
             w.Write(p.Value);
         }
 
         // Write characters.
-        w.Write(characters.Count);
-        foreach (string c in characters)
+        w.Write(Characters.Count);
+        foreach (string c in Characters)
         {
             w.Write(c);
         }
 
-        w.Write(usedCharacter);
+        w.Write(UsedCharacter);
 
-        w.Write(characterAccessories.Count);
-        foreach (string a in characterAccessories)
+        w.Write(CharacterAccessories.Count);
+        foreach (string a in CharacterAccessories)
         {
             w.Write(a);
         }
 
         // Write themes.
-        w.Write(themes.Count);
-        foreach (string t in themes)
+        w.Write(Themes.Count);
+        foreach (string t in Themes)
         {
             w.Write(t);
         }
 
-        w.Write(usedTheme);
-        w.Write(premium);
+        w.Write(UsedTheme);
+        w.Write(Premium);
 
         // Write highscores.
-        w.Write(highscores.Count);
-        for (int i = 0; i < highscores.Count; ++i)
+        w.Write(Highscores.Count);
+        for (int i = 0; i < Highscores.Count; i++)
         {
-            w.Write(highscores[i].name);
-            w.Write(highscores[i].score);
+            w.Write(Highscores[i].name);
+            w.Write(Highscores[i].score);
         }
 
         // Write missions.
-        w.Write(missions.Count);
-        for (int i = 0; i < missions.Count; ++i)
+        w.Write(Missions.Count);
+        for (int i = 0; i < Missions.Count; i++)
         {
-            w.Write((int)missions[i].GetMissionType());
-            missions[i].Serialize(w);
+            w.Write((int)Missions[i].GetMissionType());
+            Missions[i].Serialize(w);
         }
 
         // Write name.
-        w.Write(previousName);
-        w.Write(licenceAccepted);
-        w.Write(masterVolume);
-        w.Write(musicVolume);
-        w.Write(masterSFXVolume);
-        w.Write(ftueLevel);
-        w.Write(rank);
-        w.Write(tutorialDone);
+        w.Write(PreviousName);
+        w.Write(LicenceAccepted);
+        w.Write(MasterVolume);
+        w.Write(MusicVolume);
+        w.Write(MasterSFXVolume);
+        w.Write(FtueLevel);
+        w.Write(Rank);
+        w.Write(TutorialDone);
         w.Close();
     }
 }
@@ -445,33 +434,35 @@ public class PlayerData
 public class PlayerDataEditor : Editor
 {
     [MenuItem("Trash Dash Debug/Clear Save")]
-    static public void ClearSave()
+    public static void ClearSave()
     {
         File.Delete(Application.persistentDataPath + "/save.bin");
     }
 
     [MenuItem("Trash Dash Debug/Give 1000000 fishbones and 1000 premium")]
-    static public void GiveCoins()
+    public static void GiveCoins()
     {
-        PlayerData.instance.coins += 1000000;
-        PlayerData.instance.premium += 1000;
-        PlayerData.instance.Save();
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.Coins += 1000000;
+        playerData.Premium += 1000;
+        playerData.Save();
     }
 
     [MenuItem("Trash Dash Debug/Give 10 Consumables of each types")]
-    static public void AddConsumables()
+    public static void AddConsumables()
     {
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
 
         for (int i = 0; i < ShopItemList.s_ConsumablesTypes.Length; ++i)
         {
             Consumable c = ConsumableDatabase.GetConsumbale(ShopItemList.s_ConsumablesTypes[i]);
             if (c != null)
             {
-                PlayerData.instance.consumables[c.GetConsumableType()] = 10;
+                playerData.Consumables[c.GetConsumableType()] = 10;
             }
         }
 
-        PlayerData.instance.Save();
+        playerData.Save();
     }
 }
 #endif

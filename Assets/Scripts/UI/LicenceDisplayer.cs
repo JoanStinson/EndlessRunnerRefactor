@@ -4,10 +4,11 @@ public class LicenceDisplayer : MonoBehaviour
 {
     private void Start()
     {
-        PlayerData.Create();
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.Create();
 
         // If we have already accepted the licence, we close the popup, no need for it.
-        if (PlayerData.instance.licenceAccepted)
+        if (playerData.LicenceAccepted)
         {
             Close();
         }
@@ -15,8 +16,9 @@ public class LicenceDisplayer : MonoBehaviour
 
     public void Accepted()
     {
-        PlayerData.instance.licenceAccepted = true;
-        PlayerData.instance.Save();
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.LicenceAccepted = true;
+        playerData.Save();
         Close();
     }
 

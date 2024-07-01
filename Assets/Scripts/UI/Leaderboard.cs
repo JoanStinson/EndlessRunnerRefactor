@@ -33,10 +33,11 @@ public class Leaderboard : MonoBehaviour
         int localStart = 0;
         int place = -1;
         int localPlace = -1;
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
 
         if (displayPlayer)
         {
-            place = PlayerData.instance.GetScorePlace(int.Parse(playerEntry.score.text));
+            place = playerData.GetScorePlace(int.Parse(playerEntry.score.text));
             localPlace = place - localStart;
         }
 
@@ -46,7 +47,7 @@ public class Leaderboard : MonoBehaviour
             playerEntry.transform.SetSiblingIndex(localPlace);
         }
 
-        if (!forcePlayerDisplay || PlayerData.instance.highscores.Count < entriesCount)
+        if (!forcePlayerDisplay || playerData.Highscores.Count < entriesCount)
         {
             entriesRoot.GetChild(entriesRoot.transform.childCount - 1).gameObject.SetActive(false);
         }
@@ -63,12 +64,12 @@ public class Leaderboard : MonoBehaviour
                 continue;
             }
 
-            if (PlayerData.instance.highscores.Count > currentHighScore)
+            if (playerData.Highscores.Count > currentHighScore)
             {
                 hs.gameObject.SetActive(true);
-                hs.playerName.text = PlayerData.instance.highscores[currentHighScore].name;
+                hs.playerName.text = playerData.Highscores[currentHighScore].name;
                 hs.number.text = (localStart + i + 1).ToString();
-                hs.score.text = PlayerData.instance.highscores[currentHighScore].score.ToString();
+                hs.score.text = playerData.Highscores[currentHighScore].score.ToString();
                 currentHighScore++;
             }
             else

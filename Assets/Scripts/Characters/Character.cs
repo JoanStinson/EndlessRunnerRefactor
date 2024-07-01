@@ -22,9 +22,10 @@ public class Character : MonoBehaviour
     // a value of -1 as parameter disables all accessory.
     public void SetupAccesory(int accessory)
     {
+        int usedAccessory = ServiceLocator.Instance.GetService<IPlayerData>().UsedAccessory;
         for (int i = 0; i < accessories.Length; i++)
         {
-            accessories[i].gameObject.SetActive(i == PlayerData.instance.usedAccessory);
+            accessories[i].gameObject.SetActive(i == usedAccessory);
         }
     }
 }

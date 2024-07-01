@@ -28,10 +28,12 @@ public class ShopUI : MonoBehaviour
 #endif
 
     protected ShopList m_OpenList;
+    private IPlayerData m_playerData;
 
     private void Start()
     {
-        PlayerData.Create();
+        m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        m_playerData.Create();
         consumableDatabase.Load();
         CoroutineHandler.StartStaticCoroutine(CharacterDatabase.LoadDatabase());
         CoroutineHandler.StartStaticCoroutine(ThemeDatabase.LoadDatabase());
@@ -53,8 +55,8 @@ public class ShopUI : MonoBehaviour
 
     private void Update()
     {
-        coinCounter.text = PlayerData.instance.coins.ToString();
-        premiumCounter.text = PlayerData.instance.premium.ToString();
+        coinCounter.text = m_playerData.Coins.ToString();
+        premiumCounter.text = m_playerData.Premium.ToString();
     }
 
     public void OpenItemList()
@@ -93,7 +95,7 @@ public class ShopUI : MonoBehaviour
     public void CloseScene()
     {
         SceneManager.UnloadSceneAsync("shop");
-        LoadoutState loadoutState = GameManager.instance.topState as LoadoutState;
+        LoadoutState loadoutState = ServiceLocator.Instance.GetService<IGameManager>().topState as LoadoutState;
         if (loadoutState != null)
         {
             loadoutState.Refresh();
@@ -106,9 +108,9 @@ public class ShopUI : MonoBehaviour
         return ; //you can't cheat in production build
 #endif
 
-        PlayerData.instance.coins += k_CheatCoins;
-        PlayerData.instance.premium += k_CheatPremium;
-        PlayerData.instance.Save();
+        m_playerData.Coins += k_CheatCoins;
+        m_playerData.Premium += k_CheatPremium;
+        m_playerData.Save();
     }
 
 #if UNITY_ADS

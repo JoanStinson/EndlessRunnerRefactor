@@ -25,9 +25,8 @@ using UnityEngine.Analytics;
 /// 
 /// - End is called and everything is cleared and destroyed, and we go back to the Loadout State.
 /// </summary>
-public class TrackManager : MonoBehaviour
+public class TrackManager : MonoBehaviour, ITrackManager
 {
-    public static TrackManager instance { get { return s_Instance; } }
     public delegate int MultiplierModifier(int current);
     public MultiplierModifier modifyMultiply;
 
@@ -72,7 +71,6 @@ public class TrackManager : MonoBehaviour
     //used by the obstacle spawning code in the tutorial, as it need to spawn the 1st obstacle in the middle lane
     public bool firstObstacle { get; set; }
 
-    protected static TrackManager s_Instance;
     protected const float k_CountdownToStartLength = 5f;
     protected const float k_CountdownSpeed = 1.5f;
     protected const float k_StartingSegmentDistance = 2f;
@@ -115,7 +113,7 @@ public class TrackManager : MonoBehaviour
     protected void Awake()
     {
         m_ScoreAccum = 0.0f;
-        s_Instance = this;
+        ServiceLocator.Instance.AddService<ITrackManager>(this);
     }
 
     public void StartMove(bool isRestart = true)
@@ -180,18 +178,19 @@ public class TrackManager : MonoBehaviour
 
             //Addressables 1.0.1-preview
             // Spawn the player
-            var op = Addressables.InstantiateAsync(PlayerData.instance.characters[PlayerData.instance.usedCharacter],
+            var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+            var op = Addressables.InstantiateAsync(playerData.Characters[playerData.UsedCharacter],
                 Vector3.zero,
                 Quaternion.identity);
             yield return op;
             if (op.Result == null || !(op.Result is GameObject))
             {
-                Debug.LogWarning(string.Format("Unable to load character {0}.", PlayerData.instance.characters[PlayerData.instance.usedCharacter]));
+                Debug.LogWarning(string.Format("Unable to load character {0}.", playerData.Characters[playerData.UsedCharacter]));
                 yield break;
             }
 
             Character player = op.Result.GetComponent<Character>();
-            player.SetupAccesory(PlayerData.instance.usedAccessory);
+            player.SetupAccesory(playerData.UsedAccessory);
             characterController.character = player;
             characterController.trackManager = this;
             characterController.Init();
@@ -205,7 +204,7 @@ public class TrackManager : MonoBehaviour
             }
             else
             {
-                m_CurrentThemeData = ThemeDatabase.GetThemeData(PlayerData.instance.themes[PlayerData.instance.usedTheme]);
+                m_CurrentThemeData = ThemeDatabase.GetThemeData(playerData.Themes[playerData.UsedTheme]);
             }
 
             m_CurrentZone = 0;
@@ -221,7 +220,7 @@ public class TrackManager : MonoBehaviour
             m_ScoreAccum = 0;
             m_SafeSegementLeft = m_IsTutorial ? 0 : k_StartingSafeSegments;
             Coin.coinPool = new Pooler(currentTheme.collectiblePrefab, k_StartingCoinPoolSize);
-            PlayerData.instance.StartRunMissions(this);
+            playerData.StartRunMissions(this);
 
 #if UNITY_ANALYTICS
             AnalyticsEvent.GameStart(new Dictionary<string, object>
@@ -270,7 +269,7 @@ public class TrackManager : MonoBehaviour
         //if our consumable wasn't used, we put it back in our inventory
         if (characterController.inventory != null)
         {
-            PlayerData.instance.Add(characterController.inventory.GetConsumableType());
+            ServiceLocator.Instance.GetService<IPlayerData>().Add(characterController.inventory.GetConsumableType());
             characterController.inventory = null;
         }
     }
@@ -435,21 +434,22 @@ public class TrackManager : MonoBehaviour
         if (!m_IsTutorial)
         {
             //check for next rank achieved
-            int currentTarget = (PlayerData.instance.rank + 1) * 300;
+            var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+            int currentTarget = (playerData.Rank + 1) * 300;
             if (m_TotalWorldDistance > currentTarget)
             {
-                PlayerData.instance.rank += 1;
-                PlayerData.instance.Save();
+                playerData.Rank += 1;
+                playerData.Save();
 #if UNITY_ANALYTICS
 //"level" in our game are milestone the player have to reach : one every 300m
             AnalyticsEvent.LevelUp(PlayerData.instance.rank);
 #endif
             }
 
-            PlayerData.instance.UpdateMissions(this);
+            playerData.UpdateMissions(this);
         }
 
-        MusicPlayer.instance.UpdateVolumes(speedRatio);
+        ServiceLocator.Instance.GetService<IMusicPlayer>().UpdateVolumes(speedRatio);
     }
 
     public void PowerupSpawnUpdate()

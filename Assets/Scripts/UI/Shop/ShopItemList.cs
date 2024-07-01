@@ -60,10 +60,11 @@ public class ShopItemList : ShopList
     protected void RefreshButton(ShopItemListItem itemList, Consumable c)
     {
         int count = 0;
-        PlayerData.instance.consumables.TryGetValue(c.GetConsumableType(), out count);
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.Consumables.TryGetValue(c.GetConsumableType(), out count);
         itemList.countText.text = count.ToString();
 
-        if (c.GetPrice() > PlayerData.instance.coins)
+        if (c.GetPrice() > playerData.Coins)
         {
             itemList.buyButton.interactable = false;
             itemList.pricetext.color = Color.red;
@@ -73,7 +74,7 @@ public class ShopItemList : ShopList
             itemList.pricetext.color = Color.black;
         }
 
-        if (c.GetPremiumCost() > PlayerData.instance.premium)
+        if (c.GetPremiumCost() > playerData.Premium)
         {
             itemList.buyButton.interactable = false;
             itemList.premiumText.color = Color.red;
@@ -86,10 +87,11 @@ public class ShopItemList : ShopList
 
     public void Buy(Consumable c)
     {
-        PlayerData.instance.coins -= c.GetPrice();
-        PlayerData.instance.premium -= c.GetPremiumCost();
-        PlayerData.instance.Add(c.GetConsumableType());
-        PlayerData.instance.Save();
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.Coins -= c.GetPrice();
+        playerData.Premium -= c.GetPremiumCost();
+        playerData.Add(c.GetConsumableType());
+        playerData.Save();
 
 #if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
         var transactionId = System.Guid.NewGuid().ToString();

@@ -57,7 +57,8 @@ public class ShopThemeList : ShopList
 
     protected void RefreshButton(ShopItemListItem itm, ThemeData theme)
     {
-        if (theme.cost > PlayerData.instance.coins)
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        if (theme.cost > playerData.Coins)
         {
             itm.buyButton.interactable = false;
             itm.pricetext.color = Color.red;
@@ -67,7 +68,7 @@ public class ShopThemeList : ShopList
             itm.pricetext.color = Color.black;
         }
 
-        if (theme.premiumCost > PlayerData.instance.premium)
+        if (theme.premiumCost > playerData.Premium)
         {
             itm.buyButton.interactable = false;
             itm.premiumText.color = Color.red;
@@ -77,7 +78,7 @@ public class ShopThemeList : ShopList
             itm.premiumText.color = Color.black;
         }
 
-        if (PlayerData.instance.themes.Contains(theme.themeName))
+        if (playerData.Themes.Contains(theme.themeName))
         {
             itm.buyButton.interactable = false;
             itm.buyButton.image.sprite = itm.disabledButtonSprite;
@@ -87,10 +88,11 @@ public class ShopThemeList : ShopList
 
     public void Buy(ThemeData t)
     {
-        PlayerData.instance.coins -= t.cost;
-        PlayerData.instance.premium -= t.premiumCost;
-        PlayerData.instance.AddTheme(t.themeName);
-        PlayerData.instance.Save();
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.Coins -= t.cost;
+        playerData.Premium -= t.premiumCost;
+        playerData.AddTheme(t.themeName);
+        playerData.Save();
 
 #if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
         var transactionId = System.Guid.NewGuid().ToString();

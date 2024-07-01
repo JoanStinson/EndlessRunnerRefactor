@@ -12,7 +12,6 @@ public class RestartRunning : StateMachineBehaviour
             return;
         }
 
-        TrackManager.instance.StartMove();
+        ServiceLocator.Instance.GetService<ITrackManager>().StartMove();
     }
-
 }

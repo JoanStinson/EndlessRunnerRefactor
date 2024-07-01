@@ -57,7 +57,9 @@ public class ShopCharacterList : ShopList
 
     protected void RefreshButton(ShopItemListItem itm, Character c)
     {
-        if (c.cost > PlayerData.instance.coins)
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+
+        if (c.cost > playerData.Coins)
         {
             itm.buyButton.interactable = false;
             itm.pricetext.color = Color.red;
@@ -67,7 +69,7 @@ public class ShopCharacterList : ShopList
             itm.pricetext.color = Color.black;
         }
 
-        if (c.premiumCost > PlayerData.instance.premium)
+        if (c.premiumCost > playerData.Premium)
         {
             itm.buyButton.interactable = false;
             itm.premiumText.color = Color.red;
@@ -77,7 +79,7 @@ public class ShopCharacterList : ShopList
             itm.premiumText.color = Color.black;
         }
 
-        if (PlayerData.instance.characters.Contains(c.characterName))
+        if (playerData.Characters.Contains(c.characterName))
         {
             itm.buyButton.interactable = false;
             itm.buyButton.image.sprite = itm.disabledButtonSprite;
@@ -87,10 +89,11 @@ public class ShopCharacterList : ShopList
 
     public void Buy(Character c)
     {
-        PlayerData.instance.coins -= c.cost;
-        PlayerData.instance.premium -= c.premiumCost;
-        PlayerData.instance.AddCharacter(c.characterName);
-        PlayerData.instance.Save();
+        var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        playerData.Coins -= c.cost;
+        playerData.Premium -= c.premiumCost;
+        playerData.AddCharacter(c.characterName);
+        playerData.Save();
 
 #if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
         var transactionId = System.Guid.NewGuid().ToString();

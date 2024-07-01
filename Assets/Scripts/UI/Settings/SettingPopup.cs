@@ -28,7 +28,7 @@ public class SettingPopup : MonoBehaviour
 
     public void Close()
     {
-        PlayerData.instance.Save();
+        ServiceLocator.Instance.GetService<IPlayerData>().Save();
         gameObject.SetActive(false);
     }
 
@@ -52,20 +52,20 @@ public class SettingPopup : MonoBehaviour
     {
         m_MasterVolume = k_MinVolume * (1.0f - value);
         mixer.SetFloat(k_MasterVolumeFloatName, m_MasterVolume);
-        PlayerData.instance.masterVolume = m_MasterVolume;
+        ServiceLocator.Instance.GetService<IPlayerData>().MasterVolume = m_MasterVolume;
     }
 
     public void MusicVolumeChangeValue(float value)
     {
         m_MusicVolume = k_MinVolume * (1.0f - value);
         mixer.SetFloat(k_MusicVolumeFloatName, m_MusicVolume);
-        PlayerData.instance.musicVolume = m_MusicVolume;
+        ServiceLocator.Instance.GetService<IPlayerData>().MusicVolume = m_MusicVolume;
     }
 
     public void MasterSFXVolumeChangeValue(float value)
     {
         m_MasterSFXVolume = k_MinVolume * (1.0f - value);
         mixer.SetFloat(k_MasterSFXVolumeFloatName, m_MasterSFXVolume);
-        PlayerData.instance.masterSFXVolume = m_MasterSFXVolume;
+        ServiceLocator.Instance.GetService<IPlayerData>().MasterSFXVolume = m_MasterSFXVolume;
     }
 }

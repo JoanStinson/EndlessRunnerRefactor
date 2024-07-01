@@ -18,7 +18,8 @@ public class AssignOutputChannel : MonoBehaviour
             return;
         }
 
-        AudioMixerGroup[] groups = MusicPlayer.instance.mixer.FindMatchingGroups(mixerGroup);
+        var musicPlayer = ServiceLocator.Instance.GetService<IMusicPlayer>();
+        AudioMixerGroup[] groups = musicPlayer.Mixer.FindMatchingGroups(mixerGroup);
 
         if (groups.Length == 0)
         {

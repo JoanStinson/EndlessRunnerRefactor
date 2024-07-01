@@ -156,7 +156,7 @@ public class CharacterInputController : MonoBehaviour
     protected bool TutorialMoveCheck(int tutorialLevel)
     {
         tutorialWaitingForValidation = currentTutorialLevel != tutorialLevel;
-        return (!TrackManager.instance.isTutorial || currentTutorialLevel >= tutorialLevel);
+        return (!ServiceLocator.Instance.GetService<ITrackManager>().isTutorial || currentTutorialLevel >= tutorialLevel);
     }
 
     protected void Update()

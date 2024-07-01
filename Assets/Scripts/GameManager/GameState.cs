@@ -72,11 +72,13 @@ public class GameState : AState
     protected int m_CurrentSegmentObstacleIndex = 0;
     protected TrackSegment m_NextValidSegment = null;
     protected int k_ObstacleToClear = 3;
+    private IPlayerData m_playerData;
 
     private static int s_DeadHash = Animator.StringToHash("Dead");
 
     public override void Enter(AState from)
     {
+        m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
         m_CountdownRectTransform = (RectTransform)countdownText.transform;
         m_LifeHearts = new Image[k_MaxLives];
 
@@ -85,10 +87,11 @@ public class GameState : AState
             m_LifeHearts[i] = lifeRectTransform.GetChild(i).GetComponent<Image>();
         }
 
-        if (MusicPlayer.instance.GetStem(0) != gameTheme)
+        var musicPlayer = ServiceLocator.Instance.GetService<IMusicPlayer>();
+        if (musicPlayer.GetStem(0) != gameTheme)
         {
-            MusicPlayer.instance.SetStem(0, gameTheme);
-            CoroutineHandler.StartStaticCoroutine(MusicPlayer.instance.RestartAllStems());
+            musicPlayer.SetStem(0, gameTheme);
+            CoroutineHandler.StartStaticCoroutine(musicPlayer.RestartAllStems());
         }
 
         m_AdsInitialised = false;
@@ -122,7 +125,7 @@ public class GameState : AState
         }
 
         currentModifier.OnRunStart(this);
-        m_IsTutorial = !PlayerData.instance.tutorialDone;
+        m_IsTutorial = !m_playerData.TutorialDone;
         trackManager.isTutorial = m_IsTutorial;
 
         if (m_IsTutorial)
@@ -316,7 +319,7 @@ public class GameState : AState
         AudioListener.pause = false;
         trackManager.End();
         trackManager.isRerun = false;
-        PlayerData.instance.Save();
+        m_playerData.Save();
         manager.SwitchState("Loadout");
     }
 
@@ -402,8 +405,8 @@ public class GameState : AState
 
     public void OpenGameOverPopup()
     {
-        premiumForLifeButton.interactable = PlayerData.instance.premium >= 3;
-        premiumCurrencyOwned.text = PlayerData.instance.premium.ToString();
+        premiumForLifeButton.interactable = m_playerData.Premium >= 3;
+        premiumCurrencyOwned.text = m_playerData.Premium.ToString();
         ClearPowerup();
         gameOverPopup.SetActive(true);
     }
@@ -424,7 +427,7 @@ public class GameState : AState
         }
 
         m_GameoverSelectionDone = true;
-        PlayerData.instance.premium -= 3;
+        m_playerData.Premium -= 3;
         //since premium are directly added to the PlayerData premium count, we also need to remove them from the current run premium count
         // (as if you had 0, grabbed 3 during that run, you can directly buy a new chance). But for the case where you add one in the playerdata
         // and grabbed 2 during that run, we don't want to remove 3, otherwise will have -1 premium for that run!
@@ -597,8 +600,8 @@ public class GameState : AState
 
     public void FinishTutorial()
     {
-        PlayerData.instance.tutorialDone = true;
-        PlayerData.instance.Save();
+        m_playerData.TutorialDone = true;
+        m_playerData.Save();
         QuitToLoadout();
     }
 }

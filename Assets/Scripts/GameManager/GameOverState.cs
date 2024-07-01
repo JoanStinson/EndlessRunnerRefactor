@@ -17,15 +17,17 @@ public class GameOverState : AState
     public Leaderboard miniLeaderboard;
     public Leaderboard fullLeaderboard;
     public GameObject addButton;
+    private IPlayerData m_playerData;
 
     public override void Enter(AState from)
     {
+        m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
         canvas.gameObject.SetActive(true);
-        miniLeaderboard.playerEntry.inputName.text = PlayerData.instance.previousName;
+        miniLeaderboard.playerEntry.inputName.text = m_playerData.PreviousName;
         miniLeaderboard.playerEntry.score.text = trackManager.score.ToString();
         miniLeaderboard.Populate();
 
-        if (PlayerData.instance.AnyMissionComplete())
+        if (m_playerData.AnyMissionComplete())
         {
             StartCoroutine(missionPopup.Open());
         }
@@ -36,10 +38,11 @@ public class GameOverState : AState
 
         CreditCoins();
 
-        if (MusicPlayer.instance.GetStem(0) != gameOverTheme)
+        var musicPlayer = ServiceLocator.Instance.GetService<IMusicPlayer>();
+        if (musicPlayer.GetStem(0) != gameOverTheme)
         {
-            MusicPlayer.instance.SetStem(0, gameOverTheme);
-            StartCoroutine(MusicPlayer.instance.RestartAllStems());
+            musicPlayer.SetStem(0, gameOverTheme);
+            StartCoroutine(musicPlayer.RestartAllStems());
         }
     }
 
@@ -87,7 +90,7 @@ public class GameOverState : AState
 
     protected void CreditCoins()
     {
-        PlayerData.instance.Save();
+        m_playerData.Save();
 
 #if UNITY_ANALYTICS // Using Analytics Standard Events v0.3.0
         var transactionId = System.Guid.NewGuid().ToString();
@@ -133,12 +136,12 @@ public class GameOverState : AState
         }
         else
         {
-            PlayerData.instance.previousName = miniLeaderboard.playerEntry.inputName.text;
+            m_playerData.PreviousName = miniLeaderboard.playerEntry.inputName.text;
         }
 
-        PlayerData.instance.InsertScore(trackManager.score, miniLeaderboard.playerEntry.inputName.text);
+        m_playerData.InsertScore(trackManager.score, miniLeaderboard.playerEntry.inputName.text);
 
-        CharacterCollider.DeathEvent de = trackManager.characterController.characterCollider.deathData;
+        var de = trackManager.characterController.characterCollider.deathData;
         //register data to analytics
 #if UNITY_ANALYTICS
         AnalyticsEvent.GameOver(null, new Dictionary<string, object> {
@@ -152,7 +155,7 @@ public class GameOverState : AState
         });
 #endif
 
-        PlayerData.instance.Save();
+        m_playerData.Save();
         trackManager.End();
     }
 }

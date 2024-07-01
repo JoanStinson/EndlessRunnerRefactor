@@ -103,19 +103,20 @@ public class CharacterCollider : MonoBehaviour
                 magnetCoins.Remove(collider.gameObject);
             }
 
+            var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
             collider.TryGetComponent<Coin>(out var coin);
 
             if (coin.isPremium)
             {
                 Addressables.ReleaseInstance(collider.gameObject);
-                PlayerData.instance.premium += 1;
+                playerData.Premium += 1;
                 controller.premium += 1;
                 m_Audio.PlayOneShot(premiumSound);
             }
             else
             {
                 Coin.coinPool.Free(collider.gameObject);
-                PlayerData.instance.coins += 1;
+                playerData.Coins += 1;
                 controller.coins += 1;
                 m_Audio.PlayOneShot(coinSound);
             }
@@ -139,7 +140,7 @@ public class CharacterCollider : MonoBehaviour
                 Addressables.ReleaseInstance(collider.gameObject);
             }
 
-            if (TrackManager.instance.isTutorial)
+            if (ServiceLocator.Instance.GetService<ITrackManager>().isTutorial)
             {
                 m_TutorialHitObstacle = true;
             }
