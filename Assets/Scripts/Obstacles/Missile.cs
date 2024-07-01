@@ -47,10 +47,12 @@ public class Missile : Obstacle
 
         obj.transform.SetParent(segment.objectRoot, true);
         obj.transform.position += obj.transform.right * lane * segment.manager.laneOffset;
-
         obj.transform.forward = -obj.transform.forward;
-        Missile missile = obj.GetComponent<Missile>();
-        missile.m_OwnSegement = segment;
+
+        if (obj.TryGetComponent<Missile>(out var missile))
+        {
+            missile.m_OwnSegement = segment;
+        }
 
         //TODO : remove that hack related to #issue7
         Vector3 oldPos = obj.transform.position;

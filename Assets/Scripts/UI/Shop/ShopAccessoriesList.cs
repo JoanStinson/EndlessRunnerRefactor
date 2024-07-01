@@ -49,8 +49,10 @@ public class ShopAccessoriesList : ShopList
             Character c = m_CharacterList[currentIndex];
             GameObject header = op.Result;
             header.transform.SetParent(listRoot, false);
-            ShopItemListItem itmHeader = header.GetComponent<ShopItemListItem>();
-            itmHeader.nameText.text = c.characterName;
+            if (header.TryGetComponent<ShopItemListItem>(out var itemHeader))
+            {
+                itemHeader.nameText.text = c.characterName;
+            }
 
             prefabItem.InstantiateAsync().Completed += (innerOp) =>
             {
@@ -147,7 +149,7 @@ public class ShopAccessoriesList : ShopList
         {
             itm.buyButton.interactable = false;
             itm.buyButton.image.sprite = itm.disabledButtonSprite;
-            itm.buyButton.transform.GetChild(0).GetComponent<UnityEngine.UI.Text>().text = "Owned";
+            itm.buyButtonText.text = "Owned";
         }
     }
 

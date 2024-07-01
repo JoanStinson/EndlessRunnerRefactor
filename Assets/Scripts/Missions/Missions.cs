@@ -188,11 +188,10 @@ public class BarrierJumpMission : MissionBase
 
             int count = Physics.OverlapBoxNonAlloc(boxCenter, boxSize * 0.5f, m_Hits);
 
-            for (int i = 0; i < count; ++i)
+            for (int i = 0; i < count; i++)
             {
-                Obstacle obs = m_Hits[i].GetComponent<Obstacle>();
-
-                if (obs != null && obs is AllLaneObstacle)
+                if (m_Hits[i].TryGetComponent<Obstacle>(out var obs) &&
+                    obs is AllLaneObstacle)
                 {
                     if (obs != m_Previous)
                     {

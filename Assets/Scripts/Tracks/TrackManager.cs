@@ -552,14 +552,9 @@ public class TrackManager : MonoBehaviour
         yield return op;
         GameObject obj = op.Result as GameObject;
 
-        if (obj != null)
+        if (obj != null && obj.TryGetComponent<Obstacle>(out var obstacle))
         {
-            Obstacle obstacle = obj.GetComponent<Obstacle>();
-
-            if (obstacle != null)
-            {
-                yield return obstacle.Spawn(segment, segment.obstaclePositions[posIndex]);
-            }
+            yield return obstacle.Spawn(segment, segment.obstaclePositions[posIndex]);
         }
     }
 

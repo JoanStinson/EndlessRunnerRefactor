@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -29,9 +30,12 @@ public class MissionUI : MonoBehaviour
                     Debug.LogWarning(string.Format("Unable to load mission entry {0}.", missionEntryPrefab.Asset.name));
                     yield break;
                 }
-                MissionEntry entry = (op.Result as GameObject).GetComponent<MissionEntry>();
-                entry.transform.SetParent(missionPlace, false);
-                entry.FillWithMission(PlayerData.instance.missions[i], this);
+
+                if ((op.Result as GameObject).TryGetComponent<MissionEntry>(out var entry))
+                {
+                    entry.transform.SetParent(missionPlace, false);
+                    entry.FillWithMission(PlayerData.instance.missions[i], this);
+                }
             }
             else
             {
@@ -42,9 +46,12 @@ public class MissionUI : MonoBehaviour
                     Debug.LogWarning(string.Format("Unable to load button {0}.", addMissionButtonPrefab.Asset.name));
                     yield break;
                 }
-                AdsForMission obj = (op.Result as GameObject)?.GetComponent<AdsForMission>();
-                obj.missionUI = this;
-                obj.transform.SetParent(missionPlace, false);
+
+                if ((op.Result as GameObject)?.TryGetComponent<AdsForMission>(out var obj) ?? false)
+                {
+                    obj.missionUI = this;
+                    obj.transform.SetParent(missionPlace, false);
+                }
             }
         }
     }

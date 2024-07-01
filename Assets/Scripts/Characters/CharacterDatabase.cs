@@ -34,8 +34,7 @@ public class CharacterDatabase
 
             yield return Addressables.LoadAssetsAsync<GameObject>("characters", op =>
             {
-                var character = op.GetComponent<Character>();
-                if (character != null)
+                if (op.TryGetComponent<Character>(out var character))
                 {
                     m_CharactersDict.Add(character.characterName, character);
                 }

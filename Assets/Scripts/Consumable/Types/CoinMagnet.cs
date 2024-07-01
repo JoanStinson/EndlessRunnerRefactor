@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System;
 
 public class CoinMagnet : Consumable
 {
@@ -37,12 +36,13 @@ public class CoinMagnet : Consumable
 
         for (int i = 0; i < nb; i++)
         {
-            Coin returnCoin = returnColls[i].GetComponent<Coin>();
-
-            if (returnCoin != null && !returnCoin.isPremium && !characterInputController.characterCollider.magnetCoins.Contains(returnCoin.gameObject))
+            if (returnColls[i].TryGetComponent<Coin>(out var returnCoin))
             {
-                returnColls[i].transform.SetParent(characterInputController.transform);
-                characterInputController.characterCollider.magnetCoins.Add(returnColls[i].gameObject);
+                if (!returnCoin.isPremium && !characterInputController.characterCollider.magnetCoins.Contains(returnCoin.gameObject))
+                {
+                    returnColls[i].transform.SetParent(characterInputController.transform);
+                    characterInputController.characterCollider.magnetCoins.Add(returnColls[i].gameObject);
+                }
             }
         }
     }

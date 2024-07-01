@@ -64,14 +64,19 @@ public abstract class Consumable : MonoBehaviour
             //Addressables 1.0.1-preview
             var op = ActivatedParticleReference.InstantiateAsync();
             yield return op;
-            m_ParticleSpawned = op.Result.GetComponent<ParticleSystem>();
-            if (!m_ParticleSpawned.main.loop)
-            {
-                StartCoroutine(TimedRelease(m_ParticleSpawned.gameObject, m_ParticleSpawned.main.duration));
-            }
 
-            m_ParticleSpawned.transform.SetParent(characterInputController.characterCollider.transform);
-            m_ParticleSpawned.transform.localPosition = op.Result.transform.position;
+            if (op.Result.TryGetComponent<ParticleSystem>(out var particleSystem))
+            {
+                m_ParticleSpawned = particleSystem;
+                
+                if (!m_ParticleSpawned.main.loop)
+                {
+                    StartCoroutine(TimedRelease(m_ParticleSpawned.gameObject, m_ParticleSpawned.main.duration));
+                }
+
+                m_ParticleSpawned.transform.SetParent(characterInputController.characterCollider.transform);
+                m_ParticleSpawned.transform.localPosition = op.Result.transform.position;
+            }
         }
     }
 

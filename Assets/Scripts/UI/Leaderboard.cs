@@ -47,7 +47,9 @@ public class Leaderboard : MonoBehaviour
         }
 
         if (!forcePlayerDisplay || PlayerData.instance.highscores.Count < entriesCount)
+        {
             entriesRoot.GetChild(entriesRoot.transform.childCount - 1).gameObject.SetActive(false);
+        }
 
         int currentHighScore = localStart;
 

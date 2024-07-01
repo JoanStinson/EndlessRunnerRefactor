@@ -81,7 +81,7 @@ public class ShopThemeList : ShopList
         {
             itm.buyButton.interactable = false;
             itm.buyButton.image.sprite = itm.disabledButtonSprite;
-            itm.buyButton.transform.GetChild(0).GetComponent<UnityEngine.UI.Text>().text = "Owned";
+            itm.buyButtonText.text = "Owned";
         }
     }
 

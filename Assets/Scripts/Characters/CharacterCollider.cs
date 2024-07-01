@@ -103,7 +103,9 @@ public class CharacterCollider : MonoBehaviour
                 magnetCoins.Remove(collider.gameObject);
             }
 
-            if (collider.GetComponent<Coin>().isPremium)
+            collider.TryGetComponent<Coin>(out var coin);
+
+            if (coin.isPremium)
             {
                 Addressables.ReleaseInstance(collider.gameObject);
                 PlayerData.instance.premium += 1;
@@ -128,9 +130,7 @@ public class CharacterCollider : MonoBehaviour
             controller.StopMoving();
             collider.enabled = false;
 
-            var obstacle = collider.gameObject.GetComponent<Obstacle>();
-
-            if (obstacle != null)
+            if (collider.gameObject.TryGetComponent<Obstacle>(out var obstacle))
             {
                 obstacle.Impacted();
             }
@@ -168,13 +168,10 @@ public class CharacterCollider : MonoBehaviour
                 m_DeathData.worldDistance = controller.trackManager.worldDistance;
             }
         }
-        else if (collider.gameObject.layer == k_PowerupLayerIndex)
+        else if (collider.gameObject.layer == k_PowerupLayerIndex &&
+                 collider.TryGetComponent<Consumable>(out var consumable))
         {
-            var consumable = collider.GetComponent<Consumable>();
-            if (consumable != null)
-            {
-                controller.UseConsumable(consumable);
-            }
+            controller.UseConsumable(consumable);
         }
     }
 

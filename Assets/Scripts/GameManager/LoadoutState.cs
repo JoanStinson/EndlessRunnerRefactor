@@ -42,6 +42,7 @@ public class LoadoutState : AState
     public Leaderboard leaderboard;
     public MissionUI missionPopup;
     public Button runButton;
+    public Text runButtonText;
     public GameObject tutorialBlocker;
     public GameObject tutorialPrompt;
     public MeshFilter skyMeshFilter;
@@ -88,7 +89,7 @@ public class LoadoutState : AState
         }
 
         runButton.interactable = false;
-        runButton.GetComponentInChildren<Text>().text = "Loading...";
+        runButtonText.text = "Loading...";
 
         if (m_PowerupToUse != Consumable.ConsumableType.NONE)
         {
@@ -154,7 +155,7 @@ public class LoadoutState : AState
             if (interactable)
             {
                 runButton.interactable = true;
-                runButton.GetComponentInChildren<Text>().text = "Run!";
+                runButtonText.text = "Run!";
                 //we can always enabled, as the parent will be disabled if tutorial is already done
                 tutorialPrompt.SetActive(true);
             }
@@ -324,8 +325,10 @@ public class LoadoutState : AState
 
     private void SetupAccessory()
     {
-        Character c = m_Character.GetComponent<Character>();
-        c.SetupAccesory(PlayerData.instance.usedAccessory);
+        if (m_Character.TryGetComponent<Character>(out var character))
+        {
+            character.SetupAccesory(PlayerData.instance.usedAccessory);
+        }
 
         if (PlayerData.instance.usedAccessory == -1)
         {
@@ -335,8 +338,8 @@ public class LoadoutState : AState
         else
         {
             accessoryIconDisplay.enabled = true;
-            accesoryNameDisplay.text = c.accessories[PlayerData.instance.usedAccessory].accessoryName;
-            accessoryIconDisplay.sprite = c.accessories[PlayerData.instance.usedAccessory].accessoryIcon;
+            accesoryNameDisplay.text = character.accessories[PlayerData.instance.usedAccessory].accessoryName;
+            accessoryIconDisplay.sprite = character.accessories[PlayerData.instance.usedAccessory].accessoryIcon;
         }
     }
 

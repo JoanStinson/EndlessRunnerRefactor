@@ -40,8 +40,10 @@ public class PatrollingObstacle : Obstacle
 
         obj.transform.SetParent(segment.objectRoot, true);
 
-        PatrollingObstacle po = obj.GetComponent<PatrollingObstacle>();
-        po.m_Segement = segment;
+        if (obj.TryGetComponent<PatrollingObstacle>(out var po))
+        {
+            po.m_Segement = segment;
+        }
 
         //TODO : remove that hack related to #issue7
         Vector3 oldPos = obj.transform.position;

@@ -77,7 +77,7 @@ public class GameState : AState
 
     public override void Enter(AState from)
     {
-        m_CountdownRectTransform = countdownText.GetComponent<RectTransform>();
+        m_CountdownRectTransform = (RectTransform)countdownText.transform;
         m_LifeHearts = new Image[k_MaxLives];
 
         for (int i = 0; i < k_MaxLives; i++)
@@ -230,11 +230,14 @@ public class GameState : AState
                 else if (icon == null)
                 {
                     // If there's no icon for the active consumable, create it!
-                    GameObject o = Instantiate(PowerupIconPrefab);
-                    icon = o.GetComponent<PowerupIcon>();
-                    icon.linkedConsumable = characterInputController.consumables[i];
-                    icon.transform.SetParent(powerupZone, false);
-                    m_PowerupIcons.Add(icon);
+                    GameObject powerupIconInstance = Instantiate(PowerupIconPrefab);
+                    if (powerupIconInstance.TryGetComponent<PowerupIcon>(out var powerupIcon))
+                    {
+                        icon = powerupIcon;
+                        icon.linkedConsumable = characterInputController.consumables[i];
+                        icon.transform.SetParent(powerupZone, false);
+                        m_PowerupIcons.Add(icon);
+                    }
                 }
             }
 
