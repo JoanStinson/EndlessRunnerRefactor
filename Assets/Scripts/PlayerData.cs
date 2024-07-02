@@ -18,7 +18,7 @@ public class PlayerData : IPlayerData
     public string PreviousName { get; set; } = "Trash Cat";
     public int Premium { get; set; }
     public int Coins { get; set; }
-    public bool TutorialDone { get; set; }
+    public bool TutorialDone { get; set; } = false;
     public Dictionary<Consumable.ConsumableType, int> Consumables { get; set; } = new Dictionary<Consumable.ConsumableType, int>();
     public List<string> Characters { get; set; } = new List<string>();
     public List<string> Themes { get; set; } = new List<string>();
@@ -226,6 +226,7 @@ public class PlayerData : IPlayerData
         Themes.Add("Day");
         FtueLevel = 0;
         Rank = 0;
+        TutorialDone = false;
         CheckMissionsCount();
         Save();
     }
