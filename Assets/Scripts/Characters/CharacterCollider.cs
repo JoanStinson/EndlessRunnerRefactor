@@ -125,6 +125,10 @@ public class CharacterCollider : MonoBehaviour
         {
             if (m_Invincible || controller.IsCheatInvincible())
             {
+                if (collider.gameObject.TryGetComponent<Obstacle>(out var obs))
+                {
+                    obs.Impacted();
+                }
                 return;
             }
 
