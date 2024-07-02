@@ -140,7 +140,8 @@ public class CharacterCollider : MonoBehaviour
                 Addressables.ReleaseInstance(collider.gameObject);
             }
 
-            if (ServiceLocator.Instance.GetService<ITrackManager>().isTutorial)
+            var trackManager = ServiceLocator.Instance.GetService<ITrackManager>();
+            if (trackManager.isTutorial)
             {
                 m_TutorialHitObstacle = true;
             }
@@ -161,12 +162,12 @@ public class CharacterCollider : MonoBehaviour
             {
                 m_Audio.PlayOneShot(controller.character.deathSound);
                 m_DeathData.character = controller.character.characterName;
-                m_DeathData.themeUsed = controller.trackManager.currentTheme.themeName;
+                m_DeathData.themeUsed = trackManager.currentTheme.themeName;
                 m_DeathData.obstacleType = obstacle.GetType().ToString();
                 m_DeathData.coins = controller.coins;
                 m_DeathData.premium = controller.premium;
-                m_DeathData.score = controller.trackManager.score;
-                m_DeathData.worldDistance = controller.trackManager.worldDistance;
+                m_DeathData.score = trackManager.score;
+                m_DeathData.worldDistance = trackManager.worldDistance;
             }
         }
         else if (collider.gameObject.layer == k_PowerupLayerIndex &&

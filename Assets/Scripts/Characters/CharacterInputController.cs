@@ -7,7 +7,6 @@ using UnityEngine.AddressableAssets;
 /// </summary>
 public class CharacterInputController : MonoBehaviour
 {
-    public TrackManager trackManager;
     public Character character;
     public CharacterCollider characterCollider;
     public GameObject blobShadow;
@@ -64,6 +63,8 @@ public class CharacterInputController : MonoBehaviour
     private static int s_JumpingHash = Animator.StringToHash("Jumping");
     private static int s_JumpingSpeedHash = Animator.StringToHash("JumpSpeed");
     private static int s_SlidingHash = Animator.StringToHash("Sliding");
+    
+    private ITrackManager trackManager;
 
     protected void Awake()
     {
@@ -72,6 +73,11 @@ public class CharacterInputController : MonoBehaviour
         m_Sliding = false;
         m_SlideStart = 0.0f;
         m_IsRunning = false;
+    }
+
+    private void Start()
+    {
+        trackManager = ServiceLocator.Instance.GetService<ITrackManager>();
     }
 
 #if !UNITY_STANDALONE
@@ -384,7 +390,7 @@ public class CharacterInputController : MonoBehaviour
         }
 
         m_CurrentLane = targetLane;
-        m_TargetPosition = new Vector3((m_CurrentLane - 1) * trackManager.laneOffset, 0, 0);
+        m_TargetPosition = new Vector3((m_CurrentLane - 1) * trackManager.LaneOffset, 0, 0);
     }
 
     public void UseInventory()

@@ -9,9 +9,9 @@
 
     public override void OnRunTick(GameState state)
     {
-        if (state.trackManager.worldDistance >= distance)
+        if (trackManager.worldDistance >= distance)
         {
-            state.trackManager.characterController.currentLife = 0;
+            trackManager.CharacterController.currentLife = 0;
         }
     }
 

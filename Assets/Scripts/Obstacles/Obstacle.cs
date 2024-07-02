@@ -9,6 +9,12 @@ using UnityEngine;
 public abstract class Obstacle : MonoBehaviour
 {
     public AudioClip impactedSound;
+    protected ITrackManager trackManager;
+
+    private void Start()
+    {
+        trackManager = ServiceLocator.Instance.GetService<ITrackManager>();
+    }
 
     public virtual void Setup() { }
 

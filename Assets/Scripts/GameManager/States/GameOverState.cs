@@ -10,7 +10,6 @@ using System.Collections.Generic;
 /// </summary>
 public class GameOverState : AState
 {
-    public TrackManager trackManager;
     public Canvas canvas;
     public MissionUI missionPopup;
     public AudioClip gameOverTheme;
@@ -22,6 +21,7 @@ public class GameOverState : AState
     public override void Enter(AState from)
     {
         m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        trackManager = ServiceLocator.Instance.GetService<ITrackManager>();
         canvas.gameObject.SetActive(true);
         miniLeaderboard.playerEntry.inputName.text = m_playerData.PreviousName;
         miniLeaderboard.playerEntry.score.text = trackManager.score.ToString();
@@ -79,13 +79,13 @@ public class GameOverState : AState
     public void GoToLoadout()
     {
         trackManager.isRerun = false;
-        manager.SwitchState("Loadout");
+        gameManager.SwitchState("Loadout");
     }
 
     public void RunAgain()
     {
         trackManager.isRerun = false;
-        manager.SwitchState("Game");
+        gameManager.SwitchState("Game");
     }
 
     protected void CreditCoins()
@@ -141,7 +141,7 @@ public class GameOverState : AState
 
         m_playerData.InsertScore(trackManager.score, miniLeaderboard.playerEntry.inputName.text);
 
-        var de = trackManager.characterController.characterCollider.deathData;
+        var de = trackManager.CharacterController.characterCollider.deathData;
         //register data to analytics
 #if UNITY_ANALYTICS
         AnalyticsEvent.GameOver(null, new Dictionary<string, object> {

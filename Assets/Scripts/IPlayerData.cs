@@ -36,7 +36,7 @@ public interface IPlayerData
     void InsertScore(int score, string name);
     void Read();
     void Save();
-    void StartRunMissions(TrackManager manager);
-    void UpdateMissions(TrackManager manager);
+    void StartRunMissions(ITrackManager manager);
+    void UpdateMissions(ITrackManager manager);
     void NewSave();
 }

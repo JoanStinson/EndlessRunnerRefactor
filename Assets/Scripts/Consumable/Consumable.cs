@@ -86,7 +86,7 @@ public abstract class Consumable : MonoBehaviour
         Addressables.ReleaseInstance(obj);
     }
 
-    public virtual void Tick(CharacterInputController c)
+    public virtual void Tick(CharacterInputController characterInputController)
     {
         // By default do nothing, override to do per frame manipulation
         m_SinceStart += Time.deltaTime;
@@ -97,7 +97,7 @@ public abstract class Consumable : MonoBehaviour
         }
     }
 
-    public virtual void Ended(CharacterInputController c)
+    public virtual void Ended(CharacterInputController characterInputController)
     {
         if (m_ParticleSpawned != null)
         {
@@ -107,18 +107,18 @@ public abstract class Consumable : MonoBehaviour
             }
         }
 
-        if (activatedSound != null && c.powerupSource.clip == activatedSound)
+        if (activatedSound != null && characterInputController.powerupSource.clip == activatedSound)
         {
-            c.powerupSource.Stop(); //if this one the one using the audio source stop it
+            characterInputController.powerupSource.Stop(); //if this one the one using the audio source stop it
         }
 
-        for (int i = 0; i < c.consumables.Count; ++i)
+        for (int i = 0; i < characterInputController.consumables.Count; i++)
         {
             //if there is still an active consumable that have a sound, this is the one playing now
-            if (c.consumables[i].active && c.consumables[i].activatedSound != null)
+            if (characterInputController.consumables[i].active && characterInputController.consumables[i].activatedSound != null)
             {
-                c.powerupSource.clip = c.consumables[i].activatedSound;
-                c.powerupSource.Play();
+                characterInputController.powerupSource.clip = characterInputController.consumables[i].activatedSound;
+                characterInputController.powerupSource.Play();
             }
         }
     }

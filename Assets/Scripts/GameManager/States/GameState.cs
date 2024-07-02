@@ -19,7 +19,6 @@ using UnityEngine.Analytics;
 public class GameState : AState
 {
     public Canvas canvas;
-    public TrackManager trackManager;
     public AudioClip gameTheme;
 
     [Header("UI")]
@@ -49,7 +48,7 @@ public class GameState : AState
     public GameObject upSlideTuto;
     public GameObject downSlideTuto;
     public GameObject finishTuto;
-    public Modifier currentModifier = new Modifier();
+    public Modifier currentModifier;
     public string adsPlacementId = "rewardedVideo";
 #if UNITY_ANALYTICS
     public AdvertisingNetwork adsNetwork = AdvertisingNetwork.UnityAds;
@@ -78,7 +77,9 @@ public class GameState : AState
 
     public override void Enter(AState from)
     {
+        currentModifier ??= new Modifier();
         m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
+        trackManager = ServiceLocator.Instance.GetService<ITrackManager>();
         m_CountdownRectTransform = (RectTransform)countdownText.transform;
         m_LifeHearts = new Image[k_MaxLives];
 
@@ -121,7 +122,7 @@ public class GameState : AState
         if (!trackManager.isRerun)
         {
             m_TimeSinceStart = 0;
-            trackManager.characterController.currentLife = trackManager.characterController.maxLife;
+            trackManager.CharacterController.currentLife = trackManager.CharacterController.maxLife;
         }
 
         currentModifier.OnRunStart(this);
@@ -147,7 +148,7 @@ public class GameState : AState
 
                 if (!m_CountObstacles && trackManager.currentSegment == m_NextValidSegment)
                 {
-                    trackManager.characterController.currentTutorialLevel += 1;
+                    trackManager.CharacterController.currentTutorialLevel += 1;
                     m_CountObstacles = true;
                     m_NextValidSegment = null;
                     m_DisplayTutorial = true;
@@ -196,7 +197,7 @@ public class GameState : AState
 
         if (trackManager.isLoaded)
         {
-            var characterInputController = trackManager.characterController;
+            var characterInputController = trackManager.CharacterController;
             m_TimeSinceStart += Time.deltaTime;
 
             if (characterInputController.currentLife <= 0)
@@ -244,9 +245,9 @@ public class GameState : AState
                 }
             }
 
-            for (int i = 0; i < toRemove.Count; ++i)
+            for (int i = 0; i < toRemove.Count; i++)
             {
-                toRemove[i].Ended(trackManager.characterController);
+                toRemove[i].Ended(trackManager.CharacterController);
                 Addressables.ReleaseInstance(toRemove[i].gameObject);
                 if (toRemoveIcon[i] != null)
                 {
@@ -320,17 +321,17 @@ public class GameState : AState
         trackManager.End();
         trackManager.isRerun = false;
         m_playerData.Save();
-        manager.SwitchState("Loadout");
+        gameManager.SwitchState("Loadout");
     }
 
     protected void UpdateUI()
     {
-        coinText.text = trackManager.characterController.coins.ToString();
-        premiumText.text = trackManager.characterController.premium.ToString();
+        coinText.text = trackManager.CharacterController.coins.ToString();
+        premiumText.text = trackManager.CharacterController.premium.ToString();
 
         for (int i = 0; i < 3; i++)
         {
-            if (trackManager.characterController.currentLife > i)
+            if (trackManager.CharacterController.currentLife > i)
             {
                 m_LifeHearts[i].color = Color.white;
             }
@@ -356,10 +357,10 @@ public class GameState : AState
         }
 
         // Consumable
-        if (trackManager.characterController.inventory != null)
+        if (trackManager.CharacterController.inventory != null)
         {
             inventoryIcon.transform.parent.gameObject.SetActive(true);
-            inventoryIcon.sprite = trackManager.characterController.inventory.icon;
+            inventoryIcon.sprite = trackManager.CharacterController.inventory.icon;
         }
         else
         {
@@ -380,7 +381,7 @@ public class GameState : AState
         {
             if (trackManager.isRerun)
             {
-                manager.SwitchState("GameOver");
+                gameManager.SwitchState("GameOver");
             }
             else
             {
@@ -399,7 +400,7 @@ public class GameState : AState
             }
         }
 
-        trackManager.characterController.powerupSource.Stop();
+        trackManager.CharacterController.powerupSource.Stop();
         m_PowerupIcons.Clear();
     }
 
@@ -413,7 +414,7 @@ public class GameState : AState
 
     public void GameOver()
     {
-        manager.SwitchState("GameOver");
+        gameManager.SwitchState("GameOver");
     }
 
     public void PremiumForLife()
@@ -431,13 +432,13 @@ public class GameState : AState
         //since premium are directly added to the PlayerData premium count, we also need to remove them from the current run premium count
         // (as if you had 0, grabbed 3 during that run, you can directly buy a new chance). But for the case where you add one in the playerdata
         // and grabbed 2 during that run, we don't want to remove 3, otherwise will have -1 premium for that run!
-        trackManager.characterController.premium -= Mathf.Min(trackManager.characterController.premium, 3);
+        trackManager.CharacterController.premium -= Mathf.Min(trackManager.CharacterController.premium, 3);
         SecondWind();
     }
 
     public void SecondWind()
     {
-        trackManager.characterController.currentLife = 1;
+        trackManager.CharacterController.currentLife = 1;
         trackManager.isRerun = true;
         StartGame();
     }
@@ -515,7 +516,7 @@ public class GameState : AState
             return;
         }
 
-        if (AudioListener.pause && !trackManager.characterController.tutorialWaitingForValidation)
+        if (AudioListener.pause && !trackManager.CharacterController.tutorialWaitingForValidation)
         {
             m_DisplayTutorial = false;
             DisplayTutorial(false);
@@ -528,13 +529,13 @@ public class GameState : AState
         {
             m_CurrentSegmentObstacleIndex += 1;
 
-            if (!trackManager.characterController.characterCollider.tutorialHitObstacle)
+            if (!trackManager.CharacterController.characterCollider.tutorialHitObstacle)
             {
                 m_TutorialClearedObstacle += 1;
                 tutorialValidatedObstacles.text = $"{m_TutorialClearedObstacle}/{k_ObstacleToClear}";
             }
 
-            trackManager.characterController.characterCollider.tutorialHitObstacle = false;
+            trackManager.CharacterController.characterCollider.tutorialHitObstacle = false;
 
             if (m_TutorialClearedObstacle == k_ObstacleToClear)
             {
@@ -548,7 +549,7 @@ public class GameState : AState
                 //we looped, mean we finished the tutorial.
                 if (trackManager.currentZone == 0)
                 {
-                    trackManager.characterController.currentTutorialLevel = 3;
+                    trackManager.CharacterController.currentTutorialLevel = 3;
                     DisplayTutorial(true);
                 }
             }
@@ -570,27 +571,27 @@ public class GameState : AState
             Resume();
         }
 
-        switch (trackManager.characterController.currentTutorialLevel)
+        switch (trackManager.CharacterController.currentTutorialLevel)
         {
             case 0:
                 sideSlideTuto.SetActive(value);
-                trackManager.characterController.tutorialWaitingForValidation = value;
+                trackManager.CharacterController.tutorialWaitingForValidation = value;
                 break;
 
             case 1:
                 upSlideTuto.SetActive(value);
-                trackManager.characterController.tutorialWaitingForValidation = value;
+                trackManager.CharacterController.tutorialWaitingForValidation = value;
                 break;
 
             case 2:
                 downSlideTuto.SetActive(value);
-                trackManager.characterController.tutorialWaitingForValidation = value;
+                trackManager.CharacterController.tutorialWaitingForValidation = value;
                 break;
 
             case 3:
                 finishTuto.SetActive(value);
-                trackManager.characterController.StopSliding();
-                trackManager.characterController.tutorialWaitingForValidation = value;
+                trackManager.CharacterController.StopSliding();
+                trackManager.CharacterController.tutorialWaitingForValidation = value;
                 break;
 
             default:

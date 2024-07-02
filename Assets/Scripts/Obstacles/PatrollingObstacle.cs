@@ -63,13 +63,13 @@ public class PatrollingObstacle : Obstacle
             m_Audio.Play();
         }
 
-        m_OriginalPosition = transform.localPosition + transform.right * m_Segement.manager.laneOffset;
+        m_OriginalPosition = transform.localPosition + transform.right * trackManager.LaneOffset;
         transform.localPosition = m_OriginalPosition;
 
         float actualTime = Random.Range(minTime, maxTime);
 
         //time 2, becaus ethe animation is a back & forth, so we need the speed needed to do 4 lanes offset in the given time
-        m_MaxSpeed = (m_Segement.manager.laneOffset * k_LaneOffsetToFullWidth * 2) / actualTime;
+        m_MaxSpeed = (trackManager.LaneOffset * k_LaneOffsetToFullWidth * 2) / actualTime;
 
         if (animator != null)
         {
@@ -99,6 +99,6 @@ public class PatrollingObstacle : Obstacle
         }
 
         m_CurrentPos += Time.deltaTime * m_MaxSpeed;
-        transform.localPosition = m_OriginalPosition - transform.right * Mathf.PingPong(m_CurrentPos, m_Segement.manager.laneOffset * k_LaneOffsetToFullWidth);
+        transform.localPosition = m_OriginalPosition - transform.right * Mathf.PingPong(m_CurrentPos, trackManager.LaneOffset * k_LaneOffsetToFullWidth);
     }
 }

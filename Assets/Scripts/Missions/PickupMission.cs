@@ -23,16 +23,15 @@ public class PickupMission : MissionBase
         return MissionType.PICKUP;
     }
 
-    public override void RunStart(TrackManager manager)
+    public override void RunStart(ITrackManager manager)
     {
         previousCoinAmount = 0;
     }
 
-    public override void Update(TrackManager manager)
+    public override void Update(ITrackManager manager)
     {
-        int coins = manager.characterController.coins - previousCoinAmount;
+        int coins = manager.CharacterController.coins - previousCoinAmount;
         progress += coins;
-
-        previousCoinAmount = manager.characterController.coins;
+        previousCoinAmount = manager.CharacterController.coins;
     }
 }

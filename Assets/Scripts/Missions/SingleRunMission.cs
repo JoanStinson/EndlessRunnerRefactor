@@ -27,12 +27,12 @@ public class SingleRunMission : MissionBase
         return MissionType.SINGLE_RUN;
     }
 
-    public override void RunStart(TrackManager manager)
+    public override void RunStart(ITrackManager manager)
     {
         progress = 0;
     }
 
-    public override void Update(TrackManager manager)
+    public override void Update(ITrackManager manager)
     {
         progress = manager.worldDistance;
     }

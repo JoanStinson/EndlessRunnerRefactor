@@ -14,7 +14,7 @@ public class SimpleBarricade : Obstacle
     {
         //the tutorial very firts barricade need to be center and alone, so player can swipe safely in bother direction to avoid it
         var trackManager = ServiceLocator.Instance.GetService<ITrackManager>();
-        bool isTutorialFirst = trackManager.isTutorial && trackManager.firstObstacle && segment == segment.manager.currentSegment;
+        bool isTutorialFirst = trackManager.isTutorial && trackManager.firstObstacle && segment == trackManager.currentSegment;
 
         if (isTutorialFirst)
         {
@@ -43,10 +43,12 @@ public class SimpleBarricade : Obstacle
             GameObject obj = op.Result as GameObject;
 
             if (obj == null)
+            {
                 Debug.Log(gameObject.name);
+            }
             else
             {
-                obj.transform.position += obj.transform.right * lane * segment.manager.laneOffset;
+                obj.transform.position += obj.transform.right * lane * trackManager.LaneOffset;
                 obj.transform.SetParent(segment.objectRoot, true);
 
                 //TODO : remove that hack related to #issue7

@@ -11,10 +11,10 @@ using UnityEditor;
 public class TrackSegment : MonoBehaviour
 {
     public Transform pathParent;
-    public TrackManager manager;
     public Transform objectRoot;
     public Transform collectibleTransform;
     public AssetReference[] possibleObstacles;
+
     [HideInInspector]
     public float[] obstaclePositions;
 

@@ -40,8 +40,8 @@ public abstract class MissionBase
     public abstract void Created();
     public abstract MissionType GetMissionType();
     public abstract string GetMissionDesc();
-    public abstract void RunStart(TrackManager manager);
-    public abstract void Update(TrackManager manager);
+    public abstract void RunStart(ITrackManager manager);
+    public abstract void Update(ITrackManager manager);
 
     static public MissionBase GetNewMissionFromType(MissionType type)
     {

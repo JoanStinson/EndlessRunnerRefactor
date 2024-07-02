@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour, IGameManager
     public AState topState { get { if (m_StateStack.Count == 0) return null; return m_StateStack[m_StateStack.Count - 1]; } }
     public ConsumableDatabase m_ConsumableDatabase;
     public AState[] states;
+    public TrackManager trackManager;
 
     protected List<AState> m_StateStack = new List<AState>();
     protected Dictionary<string, AState> m_StateDict = new Dictionary<string, AState>();
@@ -20,6 +21,7 @@ public class GameManager : MonoBehaviour, IGameManager
     {
         ServiceLocator.Instance.GetService<IPlayerData>().Create();
         ServiceLocator.Instance.AddService<IGameManager>(this);
+        ServiceLocator.Instance.AddService<ITrackManager>(trackManager);
         m_ConsumableDatabase.Load();
 
         // We build a dictionnary from state for easy switching using their name.
@@ -32,7 +34,6 @@ public class GameManager : MonoBehaviour, IGameManager
 
         for (int i = 0; i < states.Length; i++)
         {
-            states[i].manager = this;
             m_StateDict.Add(states[i].GetName(), states[i]);
         }
 

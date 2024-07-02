@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using GameObject = UnityEngine.GameObject;
+using TMPro;
 
 #if UNITY_ANALYTICS
 using UnityEngine.Analytics;
@@ -27,10 +28,9 @@ using UnityEngine.Analytics;
 /// </summary>
 public class TrackManager : MonoBehaviour, ITrackManager
 {
-    public delegate int MultiplierModifier(int current);
-    public MultiplierModifier modifyMultiply;
-
     [Header("Character & Movements")]
+    public Transform cameraTrackPosition;
+    public float cameraZoomOutDuration = 1f;
     public CharacterInputController characterController;
     public float minSpeed = 5.0f;
     public float maxSpeed = 10.0f;
@@ -49,9 +49,10 @@ public class TrackManager : MonoBehaviour, ITrackManager
     [Header("Tutorial")]
     public ThemeData tutorialThemeData;
 
-    public System.Action<TrackSegment> newSegmentCreated;
-    public System.Action<TrackSegment> currentSegementChanged;
+    public System.Action<TrackSegment> newSegmentCreated { get; set; }
+    public System.Action<TrackSegment> currentSegementChanged { get; set; }
 
+    public CharacterInputController CharacterController => characterController;
     public int trackSeed { get { return m_TrackSeed; } set { m_TrackSeed = value; } }
     public float timeToStart { get { return m_TimeToStart; } }  // Will return -1 if already started (allow to update UI)
     public int score { get { return m_Score; } }
@@ -70,6 +71,9 @@ public class TrackManager : MonoBehaviour, ITrackManager
     public bool isLoaded { get; set; }
     //used by the obstacle spawning code in the tutorial, as it need to spawn the 1st obstacle in the middle lane
     public bool firstObstacle { get; set; }
+    public ITrackManager.MultiplierModifier modifyMultiply { get; set; }
+
+    public float LaneOffset => laneOffset;
 
     protected const float k_CountdownToStartLength = 5f;
     protected const float k_CountdownSpeed = 1.5f;
@@ -113,7 +117,6 @@ public class TrackManager : MonoBehaviour, ITrackManager
     protected void Awake()
     {
         m_ScoreAccum = 0.0f;
-        ServiceLocator.Instance.AddService<ITrackManager>(this);
     }
 
     public void StartMove(bool isRestart = true)
@@ -136,11 +139,18 @@ public class TrackManager : MonoBehaviour, ITrackManager
         characterController.character.animator.Play(s_StartHash);
         float length = k_CountdownToStartLength;
         m_TimeToStart = length;
+        bool placedCamera = false;
 
         while (m_TimeToStart >= 0)
         {
             yield return null;
             m_TimeToStart -= Time.deltaTime * k_CountdownSpeed;
+
+            if (m_TimeToStart <= cameraZoomOutDuration + 0.5f && !placedCamera)
+            {
+                PlaceCamera(cameraZoomOutDuration);
+                placedCamera = true;
+            }
         }
 
         m_TimeToStart = -1;
@@ -192,11 +202,9 @@ public class TrackManager : MonoBehaviour, ITrackManager
             Character player = op.Result.GetComponent<Character>();
             player.SetupAccesory(playerData.UsedAccessory);
             characterController.character = player;
-            characterController.trackManager = this;
             characterController.Init();
             characterController.CheatInvincible(invincible);
             player.transform.SetParent(characterController.characterCollider.transform, false);
-            Camera.main.transform.SetParent(characterController.transform, true);
 
             if (m_IsTutorial)
             {
@@ -256,8 +264,7 @@ public class TrackManager : MonoBehaviour, ITrackManager
         gameObject.SetActive(false);
         Addressables.ReleaseInstance(characterController.character.gameObject);
         characterController.character = null;
-        Camera.main.transform.SetParent(null);
-        Camera.main.transform.position = m_CameraOriginalPos;
+        ResetCamera();
         characterController.gameObject.SetActive(false);
 
         for (int i = 0; i < parallaxRoot.childCount; i++)
@@ -425,7 +432,7 @@ public class TrackManager : MonoBehaviour, ITrackManager
 
         if (modifyMultiply != null)
         {
-            foreach (MultiplierModifier part in modifyMultiply.GetInvocationList())
+            foreach (ITrackManager.MultiplierModifier part in modifyMultiply.GetInvocationList())
             {
                 m_Multiplier = part(m_Multiplier);
             }
@@ -511,7 +518,6 @@ public class TrackManager : MonoBehaviour, ITrackManager
         newSegment.GetPointAt(0.0f, out entryPoint, out entryRotation);
         Vector3 pos = currentExitPoint + (newSegment.transform.position - entryPoint);
         newSegment.transform.position = pos;
-        newSegment.manager = this;
         newSegment.transform.localScale = new Vector3((Random.value > 0.5f ? -1 : 1), 1, 1);
         newSegment.objectRoot.localScale = new Vector3(1.0f / newSegment.transform.localScale.x, 1, 1);
 
@@ -655,5 +661,31 @@ public class TrackManager : MonoBehaviour, ITrackManager
     {
         int finalAmount = amount;
         m_Score += finalAmount * m_Multiplier;
+    }
+
+    private void PlaceCamera(float duration)
+    {
+        var mainCamera = Camera.main;
+        StartCoroutine(SmoothMove(mainCamera.transform, mainCamera.transform.position, cameraTrackPosition.position, duration));
+    }
+
+    private IEnumerator SmoothMove(Transform cameraTransform, Vector3 start, Vector3 end, float duration)
+    {
+        float timeElapsed = 0f;
+        while (timeElapsed < duration)
+        {
+            cameraTransform.position = Vector3.Lerp(start, end, timeElapsed / duration);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        cameraTransform.position = end;
+        cameraTransform.SetParent(characterController.transform, true);
+    }
+
+    private void ResetCamera()
+    {
+        var mainCamera = Camera.main;
+        mainCamera.transform.SetParent(null);
+        mainCamera.transform.position = m_CameraOriginalPos;
     }
 }

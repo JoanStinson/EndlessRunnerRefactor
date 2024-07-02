@@ -29,18 +29,18 @@ public class BarrierJumpMission : MissionBase
         return MissionType.OBSTACLE_JUMP;
     }
 
-    public override void RunStart(TrackManager manager)
+    public override void RunStart(ITrackManager manager)
     {
         m_Previous = null;
         m_Hits = new Collider[k_HitColliderCount];
     }
 
-    public override void Update(TrackManager manager)
+    public override void Update(ITrackManager manager)
     {
-        if (manager.characterController.isJumping)
+        if (manager.CharacterController.isJumping)
         {
-            Vector3 boxSize = manager.characterController.characterCollider.collider.size + k_CharacterColliderSizeOffset;
-            Vector3 boxCenter = manager.characterController.transform.position - Vector3.up * boxSize.y * 0.5f;
+            Vector3 boxSize = manager.CharacterController.characterCollider.collider.size + k_CharacterColliderSizeOffset;
+            Vector3 boxCenter = manager.CharacterController.transform.position - Vector3.up * boxSize.y * 0.5f;
 
             int count = Physics.OverlapBoxNonAlloc(boxCenter, boxSize * 0.5f, m_Hits);
 

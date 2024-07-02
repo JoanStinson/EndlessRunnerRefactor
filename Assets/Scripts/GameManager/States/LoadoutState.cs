@@ -62,7 +62,7 @@ public class LoadoutState : AState
     protected int m_UsedAccessory = -1;
     protected int m_UsedPowerupIndex;
     protected bool m_IsLoadingCharacter;
-    protected Modifier m_CurrentModifier = new Modifier();
+    protected Modifier m_CurrentModifier;
     protected int k_UILayer;
 
     private Consumable.ConsumableType m_PowerupToUse = Consumable.ConsumableType.NONE;
@@ -70,6 +70,7 @@ public class LoadoutState : AState
 
     public override void Enter(AState from)
     {
+        m_CurrentModifier ??= new Modifier();
         m_playerData = ServiceLocator.Instance.GetService<IPlayerData>();
         tutorialBlocker.SetActive(!m_playerData.TutorialDone);
         tutorialPrompt.SetActive(false);
@@ -132,7 +133,7 @@ public class LoadoutState : AState
                 m_playerData.Consume(m_PowerupToUse);
                 Consumable inv = Instantiate(ConsumableDatabase.GetConsumbale(m_PowerupToUse));
                 inv.gameObject.SetActive(false);
-                gs.trackManager.characterController.inventory = inv;
+                trackManager.CharacterController.inventory = inv;
             }
         }
     }
@@ -420,7 +421,7 @@ public class LoadoutState : AState
             }
         }
 
-        manager.SwitchState("Game");
+        gameManager.SwitchState("Game");
     }
 
     public void Openleaderboard()

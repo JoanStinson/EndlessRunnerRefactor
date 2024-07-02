@@ -28,12 +28,12 @@ public class MultiplierMission : MissionBase
         return MissionType.MULTIPLIER;
     }
 
-    public override void RunStart(TrackManager manager)
+    public override void RunStart(ITrackManager manager)
     {
         progress = 0;
     }
 
-    public override void Update(TrackManager manager)
+    public override void Update(ITrackManager manager)
     {
         if (manager.multiplier > progress)
         {

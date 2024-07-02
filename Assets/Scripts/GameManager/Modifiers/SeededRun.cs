@@ -10,7 +10,7 @@
 
     public override void OnRunStart(GameState state)
     {
-        state.trackManager.trackSeed = m_Seed;
+        trackManager.trackSeed = m_Seed;
     }
 
     public override bool OnRunEnd(GameState state)

@@ -4,6 +4,13 @@
 /// </summary>
 public class Modifier
 {
+    protected ITrackManager trackManager;
+
+    public Modifier()
+    {
+        trackManager = ServiceLocator.Instance.GetService<ITrackManager>();
+    }
+
     public virtual void OnRunStart(GameState state)
     {
 

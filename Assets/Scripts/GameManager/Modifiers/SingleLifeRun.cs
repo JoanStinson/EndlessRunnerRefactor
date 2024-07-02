@@ -2,9 +2,9 @@
 {
     public override void OnRunTick(GameState state)
     {
-        if (state.trackManager.characterController.currentLife > 1)
-        {
-            state.trackManager.characterController.currentLife = 1;
+        if (trackManager.CharacterController.currentLife > 1)
+        {                
+            trackManager.CharacterController.currentLife = 1;
         }
     }
 

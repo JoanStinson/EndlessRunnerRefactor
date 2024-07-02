@@ -26,13 +26,13 @@ public class Score2Multiplier : Consumable
     {
         yield return base.Started(characterInputController);
         m_SinceStart = 0;
-        characterInputController.trackManager.modifyMultiply += MultiplyModify;
+        ServiceLocator.Instance.GetService<ITrackManager>().modifyMultiply += MultiplyModify;
     }
 
     public override void Ended(CharacterInputController characterInputController)
     {
         base.Ended(characterInputController);
-        characterInputController.trackManager.modifyMultiply -= MultiplyModify;
+        ServiceLocator.Instance.GetService<ITrackManager>().modifyMultiply -= MultiplyModify;
     }
 
     protected int MultiplyModify(int multi)

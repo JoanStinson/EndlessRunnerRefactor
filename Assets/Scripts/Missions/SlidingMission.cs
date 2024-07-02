@@ -23,14 +23,14 @@ public class SlidingMission : MissionBase
         return MissionType.SLIDING;
     }
 
-    public override void RunStart(TrackManager manager)
+    public override void RunStart(ITrackManager manager)
     {
         m_PreviousWorldDist = manager.worldDistance;
     }
 
-    public override void Update(TrackManager manager)
+    public override void Update(ITrackManager manager)
     {
-        if (manager.characterController.isSliding)
+        if (manager.CharacterController.isSliding)
         {
             float dist = manager.worldDistance - m_PreviousWorldDist;
             progress += dist;

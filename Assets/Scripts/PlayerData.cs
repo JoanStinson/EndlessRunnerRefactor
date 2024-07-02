@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
-using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
-
 #if UNITY_ANALYTICS
 using UnityEngine.Analytics;
 #endif
@@ -138,7 +136,7 @@ public class PlayerData : IPlayerData
         Missions.Add(newMission);
     }
 
-    public void StartRunMissions(TrackManager manager)
+    public void StartRunMissions(ITrackManager manager)
     {
         for (int i = 0; i < Missions.Count; i++)
         {
@@ -146,7 +144,7 @@ public class PlayerData : IPlayerData
         }
     }
 
-    public void UpdateMissions(TrackManager manager)
+    public void UpdateMissions(ITrackManager manager)
     {
         for (int i = 0; i < Missions.Count; i++)
         {
@@ -453,7 +451,7 @@ public class PlayerDataEditor : Editor
     {
         var playerData = ServiceLocator.Instance.GetService<IPlayerData>();
 
-        for (int i = 0; i < ShopItemList.s_ConsumablesTypes.Length; ++i)
+        for (int i = 0; i < ShopItemList.s_ConsumablesTypes.Length; i++)
         {
             Consumable c = ConsumableDatabase.GetConsumbale(ShopItemList.s_ConsumablesTypes[i]);
             if (c != null)

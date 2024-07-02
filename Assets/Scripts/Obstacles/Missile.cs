@@ -46,7 +46,7 @@ public class Missile : Obstacle
         GameObject obj = op.Result as GameObject;
 
         obj.transform.SetParent(segment.objectRoot, true);
-        obj.transform.position += obj.transform.right * lane * segment.manager.laneOffset;
+        obj.transform.position += obj.transform.right * lane * trackManager.LaneOffset;
         obj.transform.forward = -obj.transform.forward;
 
         if (obj.TryGetComponent<Missile>(out var missile))
@@ -79,7 +79,7 @@ public class Missile : Obstacle
 
     public void Update()
     {
-        if (m_Ready && m_OwnSegement.manager.isMoving)
+        if (m_Ready && trackManager.isMoving)
         {
             if (m_IsMoving)
             {
